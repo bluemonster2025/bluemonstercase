@@ -5,6 +5,7 @@ export async function getProductById(id: string) {
 }
 
 export async function getProductBySlug(slug: string) {
+  // ⚠️ WooCommerce retorna ARRAY mesmo que só exista 1 produto
   return fetchWc(wcUrl(`/products`, { slug }));
 }
 

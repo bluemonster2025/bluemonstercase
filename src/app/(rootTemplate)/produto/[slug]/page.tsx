@@ -9,17 +9,17 @@ async function getProductBySlug(slug: string) {
     { cache: "no-store" }
   );
   if (!res.ok) return null;
-  const arr = await res.json();
-  return arr?.[0] ?? null;
+  const product = await res.json();
+  return product ?? null;
 }
 
-// ✅ Tipagem correta
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>; // 🔙 volta para Promise
 }
 
 export default async function ProdutoPage({ params }: PageProps) {
-  const { slug } = await params; // precisa dar await
+  const { slug } = await params; // 🔙 aqui o await é necessário
+
   const [pageData, produto] = await Promise.all([
     getPageACFBySlug("produto"),
     getProductBySlug(slug),
