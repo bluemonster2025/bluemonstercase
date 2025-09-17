@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  /* Grayscale */
+  --color-grayscale-600: #1b1b1b;
+  --color-grayscale-550: #282828;
+  --color-grayscale-500: #2d2d2d;
+  --color-grayscale-450: #272934;
+  --color-grayscale-400: #4e4e4e;
+  --color-grayscale-350: #565656;
+  --color-grayscale-300: #717171;
+  --color-grayscale-200: #f4f4f4;
+  --color-grayscale-150: #f9f9f9;
+  --color-grayscale-100: #efefff;
+
+  /* Redscale */
+  --color-redscale-100: #f65454;
+
+  /* Greenscale */
+  --color-greenscale-100: #01b748;
+
+  /* Bluescale */
+  --color-bluescale-100: #687af6;
+
+  /* Breakpoints */
+  --breakpoint-xs: 300px;
+  --breakpoint-1xs: 347px;
+  --breakpoint-2xs: 398px;
+  --breakpoint-3xs: 401px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1500px;
+  --breakpoint-1xl: 1700px;
+  --breakpoint-3xl: 1900px;
+  --breakpoint-4xl: 2300px;
+}
+
+.bg-skeleton {
+  background: linear-gradient(180deg, #d4d4d4 0%, #eaeaea 51.44%, #d4d4d4 100%);
+}
