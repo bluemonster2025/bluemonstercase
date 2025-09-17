@@ -58,7 +58,7 @@ export default function HeaderTop() {
                 />
               </svg>
               <Text className="text-white text-xs">
-                Seg / Sáb 09:00 às 18:30
+                Seg / Sáb 09:00 às 18:30.
               </Text>
             </div>
           </div>
