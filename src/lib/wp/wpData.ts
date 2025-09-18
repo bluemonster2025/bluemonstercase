@@ -1,50 +1,27 @@
 // lib/wpData.ts
 import { HeroBackground, PageACF, FeaturedFrameData } from "@/types/home";
-import { Product, ProductImage } from "@/types/product";
+import {
+  Product,
+  ProductImage,
+  ProductCategory,
+  ProductAttribute,
+} from "@/types/product";
 import { createWpApi } from "./wordpress";
 
 const EMPTY_IMAGE: HeroBackground = { id: 0, url: "" };
 
 type ImageField = number | { id?: number; url?: string } | undefined | null;
 
-// Tipos WooCommerce
-type WooProductImage = { id: number; src: string; alt?: string };
-type WooProductTag = { id: number; name: string; slug?: string };
-type WooProductCategory = { id: number; name: string; slug: string };
-type WooProductAttribute = { name: string; options: string[] };
-
-type WooProduct = {
-  id: number;
-  name: string;
-  price?: string;
-  regular_price?: string;
-  images?: WooProductImage[];
-  tags?: WooProductTag[];
-  categories?: WooProductCategory[];
-  attributes?: WooProductAttribute[];
-  type?: string;
-  description?: string;
-  short_description?: string;
-  purchase_note?: string;
-  upsell_ids?: number[];
-  cross_sell_ids?: number[];
-  default_attributes?: { name: string; option: string }[];
-};
-
 // --- Funções JWT ---
 const getTokenSafe = async (): Promise<string | undefined> => {
   try {
-    // Aqui você poderia chamar uma função que pega o JWT do cookie ou gera novo
-    const token = process.env.WP_JWT_SECRET; // ou outro método de pegar token
-    return token;
+    return process.env.WP_JWT_SECRET;
   } catch {
     return undefined;
   }
 };
 
-/**
- * Resolve uma imagem do WordPress usando token JWT se houver
- */
+// --- Helpers de imagem ---
 const resolveImage = async (
   img: ImageField,
   token?: string
@@ -68,15 +45,14 @@ const resolveImage = async (
   return EMPTY_IMAGE;
 };
 
-/**
- * Wrapper para buscar imagem se existir, agora aceita token JWT
- */
 const getImageIfExists = async (field: ImageField, token?: string) => {
   return field ? await resolveImage(field, token) : EMPTY_IMAGE;
 };
 
+// --- Mapping ACF ---
 const acfMapping = {
   hero: "hero_image",
+  heroMobile: "hero_image_mobile",
   acf: {
     image: "image_sessao4",
     title: "title_sessao4",
@@ -88,9 +64,7 @@ const acfMapping = {
   productBanner: "product_banner_image",
 };
 
-/**
- * Busca página pelo slug e retorna dados ACF
- */
+// --- Páginas ---
 export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
   const token = await getTokenSafe();
   const wpApi = createWpApi(token);
@@ -103,7 +77,13 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
   const { data: acfData } = await wpApi.get(`/acf/v3/pages/${page.id}`);
   const acf = acfData.acf || {};
 
+  // pegando as imagens do hero
   const hero_image = await getImageIfExists(acf[acfMapping.hero], token);
+  const hero_image_mobile = await getImageIfExists(
+    acf[acfMapping.heroMobile],
+    token
+  );
+
   const sessao6 = await getImageIfExists(acf[acfMapping.sessao6], token);
   const imageLogo = await getImageIfExists(acf[acfMapping.logo], token);
   const productBannerImage = await getImageIfExists(
@@ -122,7 +102,7 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
 
   return {
     id: page.id,
-    hero: { hero_image },
+    hero: { hero_image, hero_image_mobile }, // agora contém as duas imagens
     acf: featuredFrame,
     sessao6,
     logo: imageLogo,
@@ -130,15 +110,33 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
   };
 };
 
-// --- WooCommerce mapping não foi alterado ---
+// --- WooCommerce Mapper ---
 const mapWooProductToProduct = async (p: {
   ID: number;
   post_title: string;
   post_name: string;
 }): Promise<Product> => {
   try {
+    type WooResponse = {
+      id: number;
+      name: string;
+      price?: string;
+      regular_price?: string;
+      images?: { id: number; src: string; alt?: string }[];
+      tags?: { id: number; name: string; slug?: string }[];
+      categories?: { id: number; name: string; slug: string }[];
+      attributes?: { name: string; options: string[] }[];
+      type?: string;
+      description?: string;
+      short_description?: string;
+      purchase_note?: string;
+      upsell_ids?: number[];
+      cross_sell_ids?: number[];
+      default_attributes?: { name: string; option: string }[];
+    };
+
     const { data: wcProduct } = await import("axios").then((axios) =>
-      axios.default.get<WooProduct>(
+      axios.default.get<WooResponse>(
         `${process.env.WOO_SITE_URL}/wp-json/wc/v3/products/${p.ID}`,
         {
           auth: {
@@ -149,30 +147,22 @@ const mapWooProductToProduct = async (p: {
       )
     );
 
-    const images: ProductImage[] = (wcProduct.images || []).map(
-      (img: WooProductImage) => ({
-        id: img.id,
-        src: img.src,
-        alt: img.alt || wcProduct.name || p.post_title,
-      })
-    );
-
-    const tags = (wcProduct.tags || []).map((t: WooProductTag) => ({
-      id: t.id,
-      name: t.name,
-      slug: t.slug || "",
+    const images: ProductImage[] = (wcProduct.images || []).map((img) => ({
+      id: img.id,
+      src: img.src,
+      alt: img.alt || wcProduct.name || p.post_title,
     }));
 
-    const categories = (wcProduct.categories || []).map(
-      (c: WooProductCategory) => ({
+    const categories: ProductCategory[] = (wcProduct.categories || []).map(
+      (c) => ({
         id: c.id,
         name: c.name,
         slug: c.slug,
       })
     );
 
-    const attributes = (wcProduct.attributes || []).map(
-      (a: WooProductAttribute) => ({
+    const attributes: ProductAttribute[] = (wcProduct.attributes || []).map(
+      (a) => ({
         name: a.name,
         options: a.options,
       })
@@ -184,7 +174,11 @@ const mapWooProductToProduct = async (p: {
       price: Number(wcProduct.price) || Number(wcProduct.regular_price) || 0,
       link: `/produto/${p.post_name}`,
       images,
-      tags,
+      tags: (wcProduct.tags || []).map((t) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug || "",
+      })),
       categories,
       attributes,
       type: wcProduct.type,
@@ -212,9 +206,7 @@ const mapWooProductToProduct = async (p: {
   }
 };
 
-/**
- * Busca produtos em destaque da home por sessão
- */
+// --- Produtos em destaque ---
 export const getHomeFeaturedProductsBySession = async (
   pageId: number,
   sessionNumber: number

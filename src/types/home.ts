@@ -6,7 +6,8 @@ export interface HeroBackground {
 
 // Tipo do Hero
 export interface Hero {
-  hero_image: HeroBackground; // aqui usamos o mesmo nome do ACF
+  hero_image: HeroBackground; // Desktop
+  hero_image_mobile: HeroBackground; // Mobile
 }
 
 // Tipo do Featured Frame
@@ -39,7 +40,7 @@ export interface BannerProduct {
 // Tipo da página com ACF
 export interface PageACF {
   id: number;
-  hero: Hero;
+  hero: Hero; // contém desktop + mobile
   acf: FeaturedFrameData;
   sessao6: Sessao6Background;
   logo: Logo;
