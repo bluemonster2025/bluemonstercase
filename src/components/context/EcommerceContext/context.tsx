@@ -27,8 +27,6 @@ export function EcommerceProvider({ children }: { children: React.ReactNode }) {
           ? `${baseUrl.replace(/\/$/, "")}/api/wc/categories`
           : "/api/wc/categories";
 
-        console.log("URL que será usada para fetch:", url);
-
         const res = await fetch(url);
 
         if (!res.ok) throw new Error("Erro ao carregar categorias");
