@@ -1,5 +1,5 @@
 // lib/wpData.ts
-import { HeroBackground, PageACF, FeaturedFrameData } from "@/types/home";
+import { Background, PageACF, FeaturedFrameData } from "@/types/home";
 import {
   Product,
   ProductImage,
@@ -8,7 +8,7 @@ import {
 } from "@/types/product";
 import { createWpApi } from "./wordpress";
 
-const EMPTY_IMAGE: HeroBackground = { id: 0, url: "" };
+const EMPTY_IMAGE: Background = { id: 0, url: "" };
 
 type ImageField = number | { id?: number; url?: string } | undefined | null;
 
@@ -25,7 +25,7 @@ const getTokenSafe = async (): Promise<string | undefined> => {
 const resolveImage = async (
   img: ImageField,
   token?: string
-): Promise<HeroBackground> => {
+): Promise<Background> => {
   if (!img) return EMPTY_IMAGE;
 
   if (typeof img !== "number" && "url" in img) {
@@ -53,13 +53,15 @@ const getImageIfExists = async (field: ImageField, token?: string) => {
 const acfMapping = {
   hero: "hero_image",
   heroMobile: "hero_image_mobile",
+  ImageSection6: "image_sessao6_mobile",
   acf: {
     image: "image_sessao4",
     title: "title_sessao4",
     text: "text_sessao4",
     link_button: "link_button_sessao4",
   },
-  sessao6: "image_sessao6",
+  bannerSession6Desktop: "image_sessao6",
+  bannerSession6Mobile: "image_sessao6_mobile",
   logo: "image_logo",
   productBanner: "product_banner_image",
 };
@@ -83,8 +85,14 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
     acf[acfMapping.heroMobile],
     token
   );
-
-  const sessao6 = await getImageIfExists(acf[acfMapping.sessao6], token);
+  const imageSession6Desktop = await getImageIfExists(
+    acf[acfMapping.bannerSession6Desktop],
+    token
+  );
+  const imageSession6Mobile = await getImageIfExists(
+    acf[acfMapping.bannerSession6Mobile],
+    token
+  );
   const imageLogo = await getImageIfExists(acf[acfMapping.logo], token);
   const productBannerImage = await getImageIfExists(
     acf[acfMapping.productBanner],
@@ -102,9 +110,13 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
 
   return {
     id: page.id,
-    hero: { hero_image, hero_image_mobile }, // agora contém as duas imagens
+    hero: { hero_image, hero_image_mobile },
     acf: featuredFrame,
-    sessao6,
+    sessao6: {
+      image_sessao6: imageSession6Desktop,
+      image_sessao6_mobile: imageSession6Mobile,
+    },
+
     logo: imageLogo,
     productBanner: productBannerImage,
   };

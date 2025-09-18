@@ -17,10 +17,10 @@ export default function FeaturedFrame({
   const imgUrl = data.image?.url || fallbackImage;
 
   return (
-    <Section>
-      <div className="flex flex-col md:flex-row items-center gap-12">
+    <Section className="pb-8">
+      <div className="flex flex-col md:flex-row items-center gap-1 md:gap-12">
         {/* Imagem */}
-        <div className="flex-1 relative w-full max-w-[385px] aspect-[16/9] md:aspect-[0.88/1]">
+        <div className="flex-1 relative w-full max-w-[385px] aspect-[0.78/1] md:aspect-[0.88/1]">
           <Image
             src={imgUrl}
             alt={data.title || "Featured"}
@@ -37,11 +37,13 @@ export default function FeaturedFrame({
               {data.title}
             </Title>
           )}
-          {data.text && <p className="text-gray-700 mb-6">{data.text}</p>}
+          {data.text && (
+            <p className="text-gray-700 mb-10 md:mb-6">{data.text}</p>
+          )}
           {data.link_button && (
             <a
               href={data.link_button}
-              className="px-6 py-2 border border-gray-800 text-gray-800 rounded hover:bg-gray-800 hover:text-white transition"
+              className="px-6 py-2 border border-black text-black font-semibold text-sm"
             >
               Saiba mais
             </a>

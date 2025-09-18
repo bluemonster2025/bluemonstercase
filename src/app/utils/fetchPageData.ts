@@ -29,7 +29,10 @@ function getFallbackData(): PageACF {
       hero_image_mobile: { id: 0, url: "/fallback.jpg" },
     },
     acf: {},
-    sessao6: { id: 0, url: "/fallback.jpg" },
+    sessao6: {
+      image_sessao6: { id: 0, url: "/fallback.jpg" },
+      image_sessao6_mobile: { id: 0, url: "/fallback.jpg" },
+    },
     logo: { id: 0, url: "/fallback.jpg" },
     productBanner: { id: 0, url: "/fallback.jpg" },
   };

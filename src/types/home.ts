@@ -1,13 +1,13 @@
 // Tipo para a imagem do Hero
-export interface HeroBackground {
+export interface Background {
   id: number;
   url: string;
 }
 
 // Tipo do Hero
 export interface Hero {
-  hero_image: HeroBackground; // Desktop
-  hero_image_mobile: HeroBackground; // Mobile
+  hero_image: Background; // Desktop
+  hero_image_mobile: Background; // Mobile
 }
 
 // Tipo do Featured Frame
@@ -23,8 +23,8 @@ export interface FeaturedFrameData {
 
 // Tipo da Sessão 5
 export interface Sessao6Background {
-  id: number;
-  url: string;
+  image_sessao6: Background;
+  image_sessao6_mobile: Background;
 }
 
 export interface Logo {

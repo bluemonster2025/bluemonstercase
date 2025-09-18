@@ -23,6 +23,7 @@ export default function SectionProducts({
   const { loading } = useCategories();
   const skeletonCount = 4;
 
+  // Configuração do Keen Slider para mobile e tablet
   const [sliderRef] = useKeenSlider<HTMLDivElement>({
     slides: {
       perView: 1.5,
@@ -30,10 +31,8 @@ export default function SectionProducts({
     },
     mode: "snap",
     breakpoints: {
-      "(min-width: 640px)": {
-        slides: {
-          perView: 2.25,
-        },
+      "(min-width: 768px)": {
+        slides: { perView: 2.5, spacing: 16 },
       },
     },
   });
@@ -49,8 +48,8 @@ export default function SectionProducts({
             {title}
           </Title>
 
-          {/* Desktop → Grid normal */}
-          <div className="hidden lg:grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-stretch pb-16">
+          {/* Desktop → Grid normal a partir de 1024px */}
+          <div className="hidden lg:grid gap-6 grid-cols-4 items-stretch pb-16">
             {loading
               ? [...Array(skeletonCount)].map((_, i) => (
                   <div key={i} className="flex flex-col h-full">
@@ -128,10 +127,10 @@ export default function SectionProducts({
         </div>
       </Section>
 
-      {/* Mobile → Keen Slider */}
+      {/* Mobile & Tablet → Keen Slider */}
       {loading ? (
         <>
-          {/* Mobile skeleton (apenas 1 card) */}
+          {/* Mobile skeleton */}
           <div className="block md:hidden px-5 pb-16">
             <Skeleton className="w-full h-48 rounded-lg" />
             <div className="p-4 flex-1 flex flex-col gap-2">
@@ -141,7 +140,7 @@ export default function SectionProducts({
             </div>
           </div>
 
-          {/* Tablet skeleton (3 colunas) */}
+          {/* Tablet skeleton 3 colunas */}
           <div className="hidden md:grid lg:hidden grid-cols-3 gap-6 px-5 pb-16">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex flex-col h-full">
@@ -156,9 +155,9 @@ export default function SectionProducts({
           </div>
         </>
       ) : (
-        <>
-          {/* Mobile slider */}
-          <div ref={sliderRef} className="keen-slider block md:hidden pb-16">
+        <div className="block lg:hidden pb-16">
+          {" "}
+          <div ref={sliderRef} className="keen-slider">
             {products.map((product) => {
               const productImage =
                 product.images?.[0]?.src || "/images/placeholder.png";
@@ -225,7 +224,7 @@ export default function SectionProducts({
               );
             })}
           </div>
-        </>
+        </div>
       )}
     </>
   );
