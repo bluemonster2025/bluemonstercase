@@ -23,7 +23,7 @@ export default function HeaderCategories() {
 
   return (
     <Section className="bg-grayscale-150 py-0 lg:py-4">
-      <div className="flex flex-col lg:flex-row gap-20 lg:gap-24 items-center justify-center">
+      <div className="flex flex-col lg:flex-row gap-5 1xs:gap-10 2xs:gap-20 lg:gap-24 items-center justify-center">
         {categories.map((cat) => (
           <Link key={cat.id} href={`/categoria/${cat.slug}`}>
             <p className="text-grayscale-350 font-semibold text-lg lg:text-sm">
