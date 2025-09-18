@@ -11,8 +11,8 @@ export default function BuyButton({
   icon,
   variant = "primary",
   fontWeight,
+  href,
 }: BuyButtonProps) {
-  // ⚠ produto agora é sempre do tipo Product
   const numeroWhatsApp = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
   if (!numeroWhatsApp) {
@@ -21,23 +21,29 @@ export default function BuyButton({
     );
   }
 
-  const produtoNome = produto.name || "Produto";
-  const produtoPreco = produto.price ?? "";
+  const produtoNome = produto?.name || "Produto";
+  const produtoPreco = produto?.price ?? "";
 
-  const link = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
+  const linkProduto = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
     `Olá! Tenho interesse no produto: ${produtoNome}, preço: R$${produtoPreco}`
   )}`;
+
+  const linkDefault = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
+    `Olá! Vim do site e quero mais informações`
+  )}`;
+
+  const finalHref = href ?? (produto ? linkProduto : linkDefault);
 
   const IconElement = icon ? <Icon name={icon} size={24} /> : null;
 
   return variant === "primary" ? (
-    <ButtonPrimary type="button" href={link}>
+    <ButtonPrimary type="button" href={finalHref}>
       <div className="flex gap-2">
-        {IconElement} <Text className={`${fontWeight}`}>{title}</Text>
+        {IconElement} <Text className={fontWeight}>{title}</Text>
       </div>
     </ButtonPrimary>
   ) : (
-    <ButtonSecondary type="button" href={link}>
+    <ButtonSecondary type="button" href={finalHref}>
       <div className="flex gap-2">
         {IconElement} {title}
       </div>

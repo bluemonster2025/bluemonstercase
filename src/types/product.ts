@@ -51,11 +51,12 @@ export interface BannerProduct {
 
 // Props do BuyButton
 export type BuyButtonProps = {
-  produto: Product;
+  produto?: Product;
   title: string;
   icon?: string;
   variant?: "primary" | "secondary";
   fontWeight?: string;
+  href?: string;
 };
 
 // Props do ProductDetail

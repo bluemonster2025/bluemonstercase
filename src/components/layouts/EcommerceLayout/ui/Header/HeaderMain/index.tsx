@@ -1,43 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import Icon from "@/components/elements/Icon";
 import { Section } from "@/components/elements/Section";
 import { Logo } from "@/types/home";
+import HeaderLogo from "../HeaderLogo";
 
 interface Props {
   data: Logo;
-  fallbackImage?: string;
 }
 
-export default function HeaderMain({
-  data,
-  fallbackImage = "/fallback.jpg",
-}: Props) {
-  const imgUrl = data?.url || fallbackImage;
+export default function HeaderMain({ data }: Props) {
   return (
     <Section>
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
         {/* Logo */}
-        <Link href="/" aria-label="Ncell">
-          {imgUrl ? (
-            <>
-              <div className="relative w-28 aspect-square">
-                <Image
-                  src={imgUrl}
-                  alt="Logo Ncell"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 112px"
-                  className="rounded-lg object-contain"
-                  priority
-                />
-              </div>
-            </>
-          ) : (
-            <p>Nenhum logo cadastrado</p>
-          )}
-        </Link>
+        <HeaderLogo logo={data} />
 
         {/* Busca */}
         <Link

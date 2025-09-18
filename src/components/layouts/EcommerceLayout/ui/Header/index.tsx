@@ -2,6 +2,7 @@ import HeaderMain from "./HeaderMain";
 import HeaderCategories from "./HeaderCategories";
 import HeaderTop from "./HeaderTop";
 import { Logo } from "@/types/home";
+import HeaderMobile from "./HeaderMobile";
 
 interface Props {
   logo: Logo;
@@ -10,11 +11,15 @@ interface Props {
 export default function Header({ logo }: Props) {
   return (
     <header className="w-full">
-      <HeaderTop />
+      {/* Desktop */}
+      <div className="hidden lg:block">
+        <HeaderTop />
+        <HeaderMain data={logo} />
+        <HeaderCategories />
+      </div>
 
-      <HeaderMain data={logo} />
-
-      <HeaderCategories />
+      {/* Mobile */}
+      <HeaderMobile data={logo} />
     </header>
   );
 }
