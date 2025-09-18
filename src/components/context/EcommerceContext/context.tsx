@@ -20,9 +20,17 @@ export function EcommerceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/wc/categories`
-        );
+        // Define baseUrl com fallback
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        // Remove possível barra no final e monta a URL corretamente
+        const url = baseUrl
+          ? `${baseUrl.replace(/\/$/, "")}/api/wc/categories`
+          : "/api/wc/categories";
+
+        console.log("URL que será usada para fetch:", url);
+
+        const res = await fetch(url);
+
         if (!res.ok) throw new Error("Erro ao carregar categorias");
 
         const data = await res.json();
