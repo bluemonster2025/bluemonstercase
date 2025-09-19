@@ -77,7 +77,7 @@ export default function ProductInfo({
           <Text className="mb-2 text-sm text-grayscale-350">
             Escolha a cor:
           </Text>
-          <div className="border border-grayscale-100 rounded cursor-pointer w-full md:w-[300px]">
+          <div className="border border-grayscale-100 rounded cursor-pointer w-full md:w-[300px] mb-4 md:mb-0">
             <button
               type="button"
               className="w-full flex items-center justify-between p-2 cursor-pointer"

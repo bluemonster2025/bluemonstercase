@@ -26,16 +26,16 @@ export default function ProductImages({
     product.type === "variable" ? variacoes : product.images || [];
 
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-col-reverse md:flex-row gap-4 items-center">
       {/* Thumbnails */}
-      <div className="flex flex-col gap-7">
+      <div className="flex flex-row md:flex-col gap-7">
         {imagesToShow.length === 0
           ? Array(4)
               .fill(0)
               .map((_, i) => (
                 <div
                   key={i}
-                  className="w-20 h-20 bg-gray-200 rounded animate-pulse"
+                  className="aspect-[0.61/1] md:aspect-[0.62/1] h-20 bg-gray-200 rounded animate-pulse"
                 />
               ))
           : imagesToShow.map((imgOrVar, i) => {
@@ -62,7 +62,7 @@ export default function ProductImages({
                     isSelected ? "border-gray-700" : "border-transparent"
                   }`}
                 >
-                  <div className="w-20 h-20 relative">
+                  <div className="aspect-[0.61/1] md:aspect-square h-20 relative">
                     <Image
                       src={src}
                       alt={
@@ -82,7 +82,7 @@ export default function ProductImages({
 
       {/* Imagem principal */}
       <div className="flex-1">
-        <div className="w-full h-[420px] relative overflow-hidden">
+        <div className="aspect-[0.97/1] md:aspect-[0.96/1] h-[270px] relative overflow-hidden">
           <Image
             src={mainImage || "/images/placeholder.png"}
             alt={product.name}
