@@ -24,7 +24,7 @@ export default function RelatedProducts({
   pBottom,
 }: RelatedProductsProps) {
   const [related, setRelated] = useState<Product[]>([]);
-  const { loading } = useCategories(); // usa loading do contexto
+  const { loading } = useCategories();
   const skeletonCount = 4;
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function RelatedProducts({
   }, [ids]);
 
   // Configuração do Keen Slider
-  const [sliderRef] = useKeenSlider<HTMLDivElement>({
+  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     slides: { perView: 1.5, spacing: 16 },
     mode: "snap",
     breakpoints: {
@@ -49,6 +49,10 @@ export default function RelatedProducts({
       },
     },
   });
+
+  useEffect(() => {
+    slider.current?.update();
+  }, [related, slider]);
 
   return (
     <div className={`${pBottom}`}>
@@ -137,6 +141,7 @@ export default function RelatedProducts({
               })}
         </div>
       </Section>
+
       {/* Mobile & Tablet → Keen Slider */}
       {loading ? (
         <>
@@ -165,75 +170,77 @@ export default function RelatedProducts({
           </div>
         </>
       ) : (
-        <div className="block lg:hidden pb-16 items-stretch">
-          <div ref={sliderRef} className="keen-slider">
-            {related.map((item) => {
-              const productImage =
-                item.images?.[0]?.src || "/images/placeholder.png";
-              return (
-                <div
-                  key={item.id}
-                  className="keen-slider__slide flex flex-col h-full pl-1"
-                >
-                  <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
-                    {item.tags && item.tags.length > 0 && (
-                      <div className="absolute top-0 right-0 flex gap-1 z-10">
-                        <span className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10">
-                          {item.tags[0].name}
-                        </span>
-                      </div>
-                    )}
-
-                    <Image
-                      src={productImage}
-                      alt={item.images?.[0]?.alt || item.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 600px"
-                      className="object-contain"
-                    />
-
-                    <Link
-                      href={`/produto/${item.slug || item.id}`}
-                      className="absolute inset-0 z-0"
-                    />
-                  </div>
-
-                  <div className="p-4 flex-1 flex flex-col">
-                    <Title
-                      as="h2"
-                      className="font-semibold text-sm text-grayscale-400 line-clamp-2"
-                    >
-                      {item.name}
-                    </Title>
-
-                    <Text className="text-grayscale-400 mt-2 flex items-baseline gap-1">
-                      {item.price !== undefined ? (
-                        <>
-                          <span className="text-xs font-medium">R$</span>
-                          <span className="text-[32px] font-bold">
-                            {Math.floor(item.price)}
+        related.length > 0 && (
+          <div className="block lg:hidden pb-16 items-stretch">
+            <div ref={sliderRef} className="keen-slider">
+              {related.map((item) => {
+                const productImage =
+                  item.images?.[0]?.src || "/images/placeholder.png";
+                return (
+                  <div
+                    key={item.id}
+                    className="keen-slider__slide flex flex-col h-full pl-1"
+                  >
+                    <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
+                      {item.tags && item.tags.length > 0 && (
+                        <div className="absolute top-0 right-0 flex gap-1 z-10">
+                          <span className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10">
+                            {item.tags[0].name}
                           </span>
-                          <span className="text-xs font-medium">
-                            ,
-                            {((item.price % 1) * 100)
-                              .toFixed(0)
-                              .padStart(2, "0")}
-                          </span>
-                        </>
-                      ) : (
-                        "-"
+                        </div>
                       )}
-                    </Text>
-                  </div>
 
-                  <div className="mt-auto flex gap-2 pt-3 text-center">
-                    <BuyButton produto={item} title="Comprar" />
+                      <Image
+                        src={productImage}
+                        alt={item.images?.[0]?.alt || item.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        className="object-contain"
+                      />
+
+                      <Link
+                        href={`/produto/${item.slug || item.id}`}
+                        className="absolute inset-0 z-0"
+                      />
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col">
+                      <Title
+                        as="h2"
+                        className="font-semibold text-sm text-grayscale-400 line-clamp-2"
+                      >
+                        {item.name}
+                      </Title>
+
+                      <Text className="text-grayscale-400 mt-2 flex items-baseline gap-1">
+                        {item.price !== undefined ? (
+                          <>
+                            <span className="text-xs font-medium">R$</span>
+                            <span className="text-[32px] font-bold">
+                              {Math.floor(item.price)}
+                            </span>
+                            <span className="text-xs font-medium">
+                              ,
+                              {((item.price % 1) * 100)
+                                .toFixed(0)
+                                .padStart(2, "0")}
+                            </span>
+                          </>
+                        ) : (
+                          "-"
+                        )}
+                      </Text>
+                    </div>
+
+                    <div className="mt-auto flex gap-2 pt-3 text-center">
+                      <BuyButton produto={item} title="Comprar" />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );
