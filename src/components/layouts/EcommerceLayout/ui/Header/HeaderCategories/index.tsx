@@ -6,7 +6,11 @@ import { Skeleton } from "@/components/elements/Skeleton";
 import { Section } from "@/components/elements/Section";
 import BuyButton from "@/components/elements/BuyButton";
 
-export default function HeaderCategories() {
+interface Props {
+  onCategoryClick?: () => void;
+}
+
+export default function HeaderCategories({ onCategoryClick }: Props) {
   const { categories, loading } = useCategories();
 
   if (loading) {
@@ -25,14 +29,19 @@ export default function HeaderCategories() {
     <Section className="bg-grayscale-150 py-0 lg:py-4">
       <div className="flex flex-col lg:flex-row gap-5 1xs:gap-10 2xs:gap-20 lg:gap-24 items-center justify-center">
         {categories.map((cat) => (
-          <Link key={cat.id} href={`/categoria/${cat.slug}`}>
+          <Link
+            key={cat.id}
+            href={`/categoria/${cat.slug}`}
+            onClick={onCategoryClick} // fecha o menu no clique
+          >
             <p className="text-grayscale-350 font-semibold text-lg lg:text-sm">
               {cat.name}
             </p>
           </Link>
         ))}
       </div>
-      {/* Botão de compra */}
+
+      {/* Botão de compra (apenas no mobile) */}
       <div className="block lg:hidden w-[200px] mx-auto pt-16 pb-8">
         <BuyButton variant="secondary" title="Compre agora" icon="BsWhatsapp" />
       </div>

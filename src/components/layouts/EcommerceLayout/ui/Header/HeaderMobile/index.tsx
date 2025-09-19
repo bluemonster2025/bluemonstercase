@@ -32,7 +32,6 @@ export default function HeaderMobile({ data }: Props) {
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
           {/* Header do menu */}
           <div className="flex items-center justify-between p-4">
-            {/* Logo */}
             <HeaderLogo logo={data} />
 
             <button
@@ -45,7 +44,8 @@ export default function HeaderMobile({ data }: Props) {
 
           {/* Conteúdo scrollável */}
           <div className="flex-1 flex flex-col items-center justify-center gap-6 bg-grayscale-150">
-            <HeaderCategories />
+            {/* passa o setIsOpen para as categorias */}
+            <HeaderCategories onCategoryClick={() => setIsOpen(false)} />
           </div>
 
           {/* Rodapé com botão + redes sociais */}
