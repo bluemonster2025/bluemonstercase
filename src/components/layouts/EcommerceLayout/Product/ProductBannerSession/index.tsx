@@ -1,18 +1,32 @@
 "use client";
 
+import { Section } from "@/components/elements/Section";
+
 interface ProductBannerProps {
-  imgUrl?: string;
+  imgUrlMobile?: string;
+  imgUrlDesktop?: string;
 }
 
-export default function ProductBannerSession({ imgUrl }: ProductBannerProps) {
-  if (!imgUrl) return <p>Nenhum banner cadastrado</p>;
+export default function ProductBannerSession({
+  imgUrlMobile,
+  imgUrlDesktop,
+}: ProductBannerProps) {
+  if (!imgUrlMobile && !imgUrlDesktop) return <p>Nenhum banner cadastrado</p>;
 
   return (
-    <div className="pb-10">
-      <div
-        className="relative w-full h-80 md:h-[327px] bg-cover bg-no-repeat bg-center rounded-3xl"
-        style={{ backgroundImage: `url(${imgUrl})` }}
-      ></div>
-    </div>
+    <>
+      <Section className="hidden md:block pb-12 md:pb-2">
+        <div
+          className="relative w-full md:aspect-[3.51/1] bg-cover bg-no-repeat bg-center md:rounded-3xl"
+          style={{ backgroundImage: `url(${imgUrlDesktop})` }}
+        ></div>
+      </Section>
+      <div className="pb-10 md:pb-8">
+        <div
+          className="block md:hidden relative w-full aspect-square bg-cover bg-no-repeat bg-center"
+          style={{ backgroundImage: `url(${imgUrlMobile})` }}
+        ></div>
+      </div>
+    </>
   );
 }

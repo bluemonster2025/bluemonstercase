@@ -33,8 +33,8 @@ export interface Logo {
 }
 
 export interface BannerProduct {
-  id: number;
-  url: string;
+  product_banner_image: Background;
+  product_banner_image_mobile: Background;
 }
 
 // Tipo da página com ACF

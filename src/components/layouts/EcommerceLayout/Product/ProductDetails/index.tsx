@@ -15,7 +15,7 @@ export default function ProductDetails({ product }: Props) {
   const toggleOpen = () => setIsOpen(!isOpen);
 
   return (
-    <div className="pb-6 mb-6">
+    <div className="pb-10 md:pb-4">
       <header
         onClick={toggleOpen}
         className="cursor-pointer flex justify-between items-center border-b border-bluescale-50 pb-4"

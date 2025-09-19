@@ -53,7 +53,6 @@ const getImageIfExists = async (field: ImageField, token?: string) => {
 const acfMapping = {
   hero: "hero_image",
   heroMobile: "hero_image_mobile",
-  ImageSection6: "image_sessao6_mobile",
   acf: {
     image: "image_sessao4",
     title: "title_sessao4",
@@ -63,7 +62,8 @@ const acfMapping = {
   bannerSession6Desktop: "image_sessao6",
   bannerSession6Mobile: "image_sessao6_mobile",
   logo: "image_logo",
-  productBanner: "product_banner_image",
+  productBannerDesktop: "product_banner_image",
+  productBannerMobile: "product_banner_image_mobile",
 };
 
 // --- Páginas ---
@@ -94,8 +94,12 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
     token
   );
   const imageLogo = await getImageIfExists(acf[acfMapping.logo], token);
-  const productBannerImage = await getImageIfExists(
-    acf[acfMapping.productBanner],
+  const productBannerDesktop = await getImageIfExists(
+    acf[acfMapping.productBannerDesktop],
+    token
+  );
+  const productBannerMobile = await getImageIfExists(
+    acf[acfMapping.productBannerMobile],
     token
   );
 
@@ -118,7 +122,10 @@ export const getPageACFBySlug = async (slug: string): Promise<PageACF> => {
     },
 
     logo: imageLogo,
-    productBanner: productBannerImage,
+    productBanner: {
+      product_banner_image: productBannerDesktop,
+      product_banner_image_mobile: productBannerMobile,
+    },
   };
 };
 

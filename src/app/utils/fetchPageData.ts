@@ -34,6 +34,9 @@ function getFallbackData(): PageACF {
       image_sessao6_mobile: { id: 0, url: "/fallback.jpg" },
     },
     logo: { id: 0, url: "/fallback.jpg" },
-    productBanner: { id: 0, url: "/fallback.jpg" },
+    productBanner: {
+      product_banner_image: { id: 0, url: "/fallback.jpg" },
+      product_banner_image_mobile: { id: 0, url: "/fallback.jpg" },
+    },
   };
 }

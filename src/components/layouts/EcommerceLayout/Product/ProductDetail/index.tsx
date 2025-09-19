@@ -21,7 +21,10 @@ export default function ProductDetail({ produto, fallbackImage, data }: Props) {
   const { variacoes, selectedVar, setSelectedVar, mainImage, setMainImage } =
     useProductVariations(product);
 
-  const imgUrl = data?.url || fallbackImage;
+  const bgUrlDesktop = data?.product_banner_image.url || fallbackImage;
+
+  const bgUrlDesktopMobile =
+    data?.product_banner_image_mobile.url || fallbackImage;
 
   if (!product) return <Section>Produto não encontrado.</Section>;
 
@@ -59,10 +62,13 @@ export default function ProductDetail({ produto, fallbackImage, data }: Props) {
 
       <Section className="md:pb-10">
         <ProductDetails product={product} />
-
-        {/* Banner */}
-        <ProductBannerSession imgUrl={imgUrl} />
       </Section>
+
+      {/* Banner */}
+      <ProductBannerSession
+        imgUrlDesktop={bgUrlDesktop}
+        imgUrlMobile={bgUrlDesktopMobile}
+      />
 
       {(product.upsell_ids || []).length > 0 && (
         <RelatedProducts
