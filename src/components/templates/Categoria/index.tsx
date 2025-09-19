@@ -1,12 +1,17 @@
 import { Product } from "@/types/product";
-import { Category } from "@/types/category";
-import { categoryCovers } from "./content";
+import { WooCategoryWithCovers } from "@/types/category";
 import Image from "next/image";
 import { Section } from "@/components/elements/Section";
 import FilteredProducts from "@/components/layouts/EcommerceLayout/Categories/FilteredProducts";
 
-// Buscar categoria pelo slug literal
-async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
+interface CategoriaTemplateProps {
+  params: { slug: string };
+}
+
+// --- Buscar categoria pelo slug usando sua API interna ---
+async function getCategoryBySlug(
+  slug: string
+): Promise<WooCategoryWithCovers | undefined> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/wc/categories`,
@@ -17,15 +22,30 @@ async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
     if (!res.ok) return undefined;
 
     const data = await res.json();
-    const categories: Category[] = Array.isArray(data) ? data : data.categories;
-    return categories.find((c) => c.slug === slug);
+    const categories: WooCategoryWithCovers[] = Array.isArray(data)
+      ? data
+      : data.categories;
+    const category = categories.find((c) => c.slug === slug);
+    if (!category) return undefined;
+
+    // --- Resolver cover_desktop e cover_mobile a partir do objeto ACF ---
+    const categoryWithCovers: WooCategoryWithCovers = {
+      ...category,
+      cover_desktop: category.acf?.category_cover_desktop?.url || "",
+      cover_mobile: category.acf?.category_cover_mobile?.url || "",
+      cover_video: category.acf?.category_cover_video?.url || "",
+    };
+
+    console.log("Categoria com covers:", categoryWithCovers);
+
+    return categoryWithCovers;
   } catch (err) {
     console.error("Erro ao buscar categoria:", err);
     return undefined;
   }
 }
 
-// Buscar produtos pela categoria
+// --- Buscar produtos pela categoria ---
 async function getProductsByCategoryId(id: number): Promise<Product[]> {
   try {
     const res = await fetch(
@@ -46,15 +66,7 @@ async function getProductsByCategoryId(id: number): Promise<Product[]> {
   }
 }
 
-// Pegar capa da categoria
-function getCategoryCover(slug: string): string {
-  return (categoryCovers as Record<string, string>)[slug] || "";
-}
-
-interface CategoriaTemplateProps {
-  params: { slug: string };
-}
-
+// --- Componente ---
 export default async function CategoriaTemplate({
   params,
 }: CategoriaTemplateProps) {
@@ -64,32 +76,50 @@ export default async function CategoriaTemplate({
   if (!category) return <div className="p-6">Categoria não encontrada</div>;
 
   const produtos = await getProductsByCategoryId(category.id);
-  const coverUrl = getCategoryCover(category.slug);
-  const isVideo = coverUrl.endsWith(".mp4");
 
   return (
     <>
-      {coverUrl && (
-        <div
-          className="mb-15 relative w-full overflow-hidden rounded-lg"
-          style={{ aspectRatio: "3/1" }}
-        >
-          {isVideo ? (
+      {(category.cover_video ||
+        category.cover_desktop ||
+        category.cover_mobile) && (
+        <div className="mb-15 relative w-full overflow-hidden aspect-[0.83/1] md:aspect-[3/1]">
+          {/* --- Se houver vídeo no ACF, prioriza ele --- */}
+          {category.cover_video ? (
             <video
-              src={coverUrl}
+              src={category.cover_video}
               autoPlay
               loop
               muted
+              playsInline
               className="absolute top-0 left-0 w-full h-full object-cover object-center"
             />
           ) : (
-            <Image
-              src={coverUrl}
-              alt={`Capa da categoria ${category.name}`}
-              fill
-              className="object-cover object-center"
-              sizes="100vw"
-            />
+            <>
+              {/* Mobile */}
+              {category.cover_mobile && (
+                <div className="block md:hidden w-full h-full">
+                  <Image
+                    src={category.cover_mobile}
+                    alt={`Capa da categoria ${category.name}`}
+                    fill
+                    className="object-cover object-center"
+                    sizes="100vw"
+                  />
+                </div>
+              )}
+              {/* Desktop */}
+              {category.cover_desktop && (
+                <div className="hidden md:block w-full h-full">
+                  <Image
+                    src={category.cover_desktop}
+                    alt={`Capa da categoria ${category.name}`}
+                    fill
+                    className="object-cover object-center"
+                    sizes="100vw"
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

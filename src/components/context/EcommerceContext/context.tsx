@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
 import { Category } from "@/types/category";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type EcommerceContextProps = {
   categories: Category[];
