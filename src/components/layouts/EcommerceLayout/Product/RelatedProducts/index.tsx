@@ -61,7 +61,7 @@ export default function RelatedProducts({
         </Title>
 
         {/* Desktop → Grid */}
-        <div className="hidden lg:grid grid-cols-4 gap-6 items-stretch pb-16">
+        <div className="hidden lg:grid grid-cols-4 gap-6 items-stretch">
           {loading
             ? [...Array(skeletonCount)].map((_, i) => (
                 <div key={i} className="flex flex-col h-full">
@@ -151,7 +151,7 @@ export default function RelatedProducts({
           </div>
 
           {/* Tablet skeleton */}
-          <div className="hidden md:grid lg:hidden grid-cols-3 gap-6 px-5 pb-16">
+          <div className="hidden md:grid lg:hidden grid-cols-3 gap-6 px-5 pb-16 items-stretch">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex flex-col h-full">
                 <Skeleton className="w-full h-48 rounded-lg" />
@@ -165,7 +165,7 @@ export default function RelatedProducts({
           </div>
         </>
       ) : (
-        <div className="block lg:hidden pb-16">
+        <div className="block lg:hidden pb-16 items-stretch">
           <div ref={sliderRef} className="keen-slider">
             {related.map((item) => {
               const productImage =

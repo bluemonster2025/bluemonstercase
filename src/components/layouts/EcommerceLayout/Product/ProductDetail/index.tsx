@@ -53,11 +53,11 @@ export default function ProductDetail({ produto, fallbackImage, data }: Props) {
         <RelatedProducts
           ids={product.cross_sell_ids || []}
           title="Compre também"
-          pBottom="pb-16"
+          pBottom="lg:pb-16"
         />
       )}
 
-      <Section className="md:p-10">
+      <Section className="md:pb-10">
         <ProductDetails product={product} />
 
         {/* Banner */}

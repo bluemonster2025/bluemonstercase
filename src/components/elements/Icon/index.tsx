@@ -1,4 +1,5 @@
 import * as Fa from "react-icons/fa";
+import * as Fi from "react-icons/fi";
 import * as Ci from "react-icons/ci";
 import * as Fa6 from "react-icons/fa6";
 import * as Bs from "react-icons/bs";
@@ -6,6 +7,7 @@ import * as Io from "react-icons/io";
 
 export const AllIcons = {
   ...Fa,
+  ...Fi,
   ...Ci,
   ...Fa6,
   ...Bs,
