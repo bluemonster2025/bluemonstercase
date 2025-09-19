@@ -26,26 +26,28 @@ export default function ProductDetail({ produto, fallbackImage, data }: Props) {
   if (!product) return <Section>Produto não encontrado.</Section>;
 
   return (
-    <Section className="md:p-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
-        <ProductImages
-          product={product}
-          mainImage={mainImage}
-          setMainImage={setMainImage}
-          selectedVar={selectedVar}
-          setSelectedVar={setSelectedVar}
-          variacoes={variacoes}
-        />
+    <>
+      <Section className="md:p-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
+          <ProductImages
+            product={product}
+            mainImage={mainImage}
+            setMainImage={setMainImage}
+            selectedVar={selectedVar}
+            setSelectedVar={setSelectedVar}
+            variacoes={variacoes}
+          />
 
-        <ProductInfo
-          product={product}
-          mainImage={mainImage}
-          setMainImage={setMainImage}
-          selectedVar={selectedVar}
-          setSelectedVar={setSelectedVar}
-          variacoes={variacoes}
-        />
-      </div>
+          <ProductInfo
+            product={product}
+            mainImage={mainImage}
+            setMainImage={setMainImage}
+            selectedVar={selectedVar}
+            setSelectedVar={setSelectedVar}
+            variacoes={variacoes}
+          />
+        </div>
+      </Section>
 
       {(product.cross_sell_ids || []).length > 0 && (
         <RelatedProducts
@@ -55,10 +57,12 @@ export default function ProductDetail({ produto, fallbackImage, data }: Props) {
         />
       )}
 
-      <ProductDetails product={product} />
+      <Section className="md:p-10">
+        <ProductDetails product={product} />
 
-      {/* Banner */}
-      <ProductBannerSession imgUrl={imgUrl} />
+        {/* Banner */}
+        <ProductBannerSession imgUrl={imgUrl} />
+      </Section>
 
       {(product.upsell_ids || []).length > 0 && (
         <RelatedProducts
@@ -66,6 +70,6 @@ export default function ProductDetail({ produto, fallbackImage, data }: Props) {
           title="Itens Relacionados"
         />
       )}
-    </Section>
+    </>
   );
 }

@@ -172,7 +172,7 @@ export default function ProductInfo({
 
       {/* Formas de pagamento para produtos simples */}
       {product.type !== "variable" && (
-        <div>
+        <div className="hidden md:block">
           <Title
             as="h3"
             className="text-grayscale-350 font-bold text-sm uppercase"
