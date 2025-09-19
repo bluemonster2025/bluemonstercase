@@ -22,7 +22,7 @@ export default function BannerSection6({
           style={{ backgroundImage: `url(${bgUrlDesktop})` }}
         ></div>
       </Section>
-      <div className="pb-8">
+      <div className="pb-10 md:pb-8">
         <div
           className="block md:hidden relative w-full aspect-[1.44/1] bg-cover bg-no-repeat bg-center"
           style={{ backgroundImage: `url(${bgUrlDesktopMobile})` }}

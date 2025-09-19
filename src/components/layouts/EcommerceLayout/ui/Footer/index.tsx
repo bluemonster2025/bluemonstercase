@@ -21,7 +21,7 @@ export default function Footer({
   return (
     <>
       <Section>
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex gap-4 items-center justify-between">
           <Link href="/" aria-label="Ncell">
             {imgUrl ? (
               <>
