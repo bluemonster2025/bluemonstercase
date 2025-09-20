@@ -60,7 +60,7 @@ export default function Header({ data }: Props) {
                   <li key={item.path}>
                     <button
                       onClick={() => router.push(item.path)}
-                      className={`text-grayscale-450 ${
+                      className={`text-grayscale-450 cursor-pointer ${
                         isActive ? "font-semibold" : ""
                       }`}
                     >

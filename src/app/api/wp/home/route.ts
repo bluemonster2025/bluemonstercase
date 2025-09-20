@@ -3,19 +3,13 @@ import { getPageACFBySlug } from "@/lib/wp/wpData";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const slug = searchParams.get("slug");
-
-  if (!slug) {
-    return NextResponse.json({ error: "Slug é obrigatório" }, { status: 400 });
-  }
+  const slug = searchParams.get("slug") || "home"; // 👈 fallback padrão
 
   try {
     const data = await getPageACFBySlug(slug);
     return NextResponse.json(data);
   } catch (err: unknown) {
-    // Type guard para erros do Axios
     if (err instanceof Error) {
-      // Axios pode ter response.data
       const axiosError = err as {
         response?: { data?: unknown; status?: number };
       };

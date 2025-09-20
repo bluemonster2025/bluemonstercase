@@ -5,10 +5,10 @@ import { footerContent } from "./content";
 import Image from "next/image";
 import { LinkExternal } from "@/components/elements/LinkExternal/LinkExternal";
 import Icon from "@/components/elements/Icon";
-import { Logo } from "@/types/home";
+import { LogoType } from "@/types/home";
 
 interface Props {
-  data: Logo;
+  data: LogoType;
   fallbackImage?: string;
 }
 

@@ -35,7 +35,7 @@ export default function HeaderMain({ data }: Props) {
 
         {/* Login */}
         <Link
-          href="/login"
+          href="/admin/login"
           className="bg-grayscale-550 text-white px-6 py-2 rounded text-center md:w-auto w-full text-sm"
         >
           Login
