@@ -82,7 +82,7 @@ export default async function CategoriaTemplate({
       {(category.cover_video ||
         category.cover_desktop ||
         category.cover_mobile) && (
-        <div className="mb-15 relative w-full overflow-hidden aspect-[0.83/1] md:aspect-[3/1]">
+        <div className="mb-10 lg:mb-15 relative w-full overflow-hidden aspect-[0.83/1] md:aspect-[3/1]">
           {/* --- Se houver vídeo no ACF, prioriza ele --- */}
           {category.cover_video ? (
             <video

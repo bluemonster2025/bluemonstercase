@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Product } from "@/types/product";
-import { Icon } from "@/components/elements/Icon"; // ajuste o caminho se precisar
+import { Icon } from "@/components/elements/Icon";
+import { Text } from "@/components/elements/Texts";
 
 type CategoriaFiltersProps = {
   produtos: Product[];
@@ -62,15 +63,19 @@ export default function CategoriaFilters({
     sortOptions.find((opt) => opt.value === sort)?.label || "Ordenar por:";
 
   return (
-    <div className="flex items-center gap-4 mb-15 justify-between">
+    <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-15 justify-between">
+      <div className="block lg:hidden">
+        <Text className="text-lg text-black">Filtro</Text>
+      </div>
+
       {/* Filtros de preço */}
-      <div className="flex gap-6 items-center">
+      <div className="flex gap-6 items-center w-full">
         <input
           type="number"
           value={minPrice || ""}
           onChange={(e) => setMinPrice(Number(e.target.value))}
           placeholder="de: R$ 00"
-          className="border border-grayscale-100 rounded px-4 py-3 w-50 outline-none text-grayscale-450 text-base"
+          className="border border-grayscale-100 rounded px-4 py-3 w-full lg:w-50 outline-none text-grayscale-450 text-base"
         />
 
         <input
@@ -78,13 +83,13 @@ export default function CategoriaFilters({
           value={maxPrice || ""}
           onChange={(e) => setMaxPrice(Number(e.target.value))}
           placeholder="até: R$ 00"
-          className="border border-grayscale-100 rounded px-4 py-3 w-50 outline-none text-grayscale-450 text-base"
+          className="border border-grayscale-100 rounded px-4 py-3 w-full lg:w-50 outline-none text-grayscale-450 text-base"
         />
       </div>
 
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-col lg:flex-row gap-4 items-center w-full">
         {/* Dropdown customizado para ordenação */}
-        <div className="relative border border-grayscale-100 rounded cursor-pointer w-[220px]">
+        <div className="relative border border-grayscale-100 rounded cursor-pointer w-full lg:w-[400px]">
           <button
             type="button"
             className="w-full flex items-center justify-between p-3 cursor-pointer"
@@ -114,11 +119,10 @@ export default function CategoriaFilters({
           )}
         </div>
         {/* Botão aplicar */}
-        <div>
-          {" "}
+        <div className="w-full">
           <button
             onClick={handleApply}
-            className="bg-black text-white px-6 py-3 text-sm font-semibold cursor-pointer"
+            className="bg-black text-white px-6 py-3 text-sm font-semibold cursor-pointer w-full lg:max-w-[136px]"
           >
             Aplicar
           </button>
