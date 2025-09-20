@@ -30,7 +30,7 @@ export default function AdminLogin() {
         setUser(data.user);
 
         // 🔑 Redireciona após atualizar o contexto
-        router.push("/admin");
+        router.push("/admin/home");
       } else {
         await res.json().catch(() => {});
         alert("Usuário ou senha inválido");
