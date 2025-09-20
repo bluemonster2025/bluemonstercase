@@ -3,11 +3,11 @@
 import Link from "next/link";
 import Icon from "@/components/elements/Icon";
 import { Section } from "@/components/elements/Section";
-import { Logo } from "@/types/home";
-import HeaderLogo from "../HeaderLogo";
+import { LogoType } from "@/types/home";
+import Logo from "../Logo";
 
 interface Props {
-  data: Logo;
+  data: LogoType;
 }
 
 export default function HeaderMain({ data }: Props) {
@@ -15,7 +15,7 @@ export default function HeaderMain({ data }: Props) {
     <Section>
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
         {/* Logo */}
-        <HeaderLogo logo={data} />
+        <Logo logo={data} />
 
         {/* Busca */}
         <Link

@@ -7,7 +7,7 @@ import BuyButton from "@/components/elements/BuyButton";
 import { Product } from "@/types/product";
 import { Title, Text } from "@/components/elements/Texts";
 import { Skeleton } from "@/components/elements/Skeleton";
-import { useCategories } from "@/components/context/EcommerceContext/context";
+import { useCategories } from "@/context/EcommerceContext/context";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { Section } from "@/components/elements/Section";

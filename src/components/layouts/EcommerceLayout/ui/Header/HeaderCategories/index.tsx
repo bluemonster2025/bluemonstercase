@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useCategories } from "@/components/context/EcommerceContext/context";
 import { Skeleton } from "@/components/elements/Skeleton";
 import { Section } from "@/components/elements/Section";
 import BuyButton from "@/components/elements/BuyButton";
+import { useCategories } from "@/context/EcommerceContext/context";
 
 interface Props {
   onCategoryClick?: () => void;

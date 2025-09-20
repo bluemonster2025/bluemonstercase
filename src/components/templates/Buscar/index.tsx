@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useCategories } from "../../context/EcommerceContext/context";
+import { useCategories } from "@/context/EcommerceContext/context";
 import { Product } from "@/types/product";
 import { Section } from "@/components/elements/Section";
 import { Title } from "@/components/elements/Texts";

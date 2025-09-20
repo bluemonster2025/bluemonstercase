@@ -1,11 +1,11 @@
 import HeaderMain from "./HeaderMain";
 import HeaderCategories from "./HeaderCategories";
 import HeaderTop from "./HeaderTop";
-import { Logo } from "@/types/home";
+import { LogoType } from "@/types/home";
 import HeaderMobile from "./HeaderMobile";
 
 interface Props {
-  logo: Logo;
+  logo: LogoType;
 }
 
 export default function Header({ logo }: Props) {

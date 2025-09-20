@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/elements/Icon";
 import { Logo } from "@/types/home";
-import HeaderLogo from "../HeaderLogo";
+import HeaderLogo from "../Logo";
 import HeaderCategories from "../HeaderCategories";
 
 interface Props {

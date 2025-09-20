@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Logo } from "@/types/home";
+import { LogoType } from "@/types/home";
 
 interface Props {
-  logo: Logo;
+  logo: LogoType;
   fallbackImage?: string;
   className?: string;
 }
 
-export default function HeaderLogo({
+export default function Logo({
   logo,
   fallbackImage = "/fallback.jpg",
   className = "relative w-28 aspect-[2/1] lg:aspect-square",

@@ -1,9 +1,57 @@
-// middleware.ts
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export function middleware(req: Request) {
-  console.log("🔒 Middleware rodando em:", req.url); // Para debug no localhost
+const WP_URL = process.env.WOO_SITE_URL;
 
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // ======================================
+  // 1. Proteção com JWT no /admin
+  // ======================================
+  if (pathname.startsWith("/admin")) {
+    const token = req.cookies.get("wp_jwt")?.value;
+    const isLoginPage = pathname.startsWith("/admin/login");
+
+    if (!token) {
+      if (!isLoginPage) {
+        return NextResponse.redirect(new URL("/admin/login", req.url));
+      }
+      return NextResponse.next();
+    }
+
+    // 🔎 Valida token no WordPress
+    try {
+      const wpRes = await fetch(
+        `${WP_URL}/wp-json/jwt-auth/v1/token/validate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!wpRes.ok) {
+        // token inválido ou expirado → força login
+        return NextResponse.redirect(new URL("/admin/login", req.url));
+      }
+    } catch (err) {
+      console.error("Erro validando token JWT no WordPress:", err);
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+
+    if (isLoginPage) {
+      // já autenticado e tentando acessar login → redireciona
+      return NextResponse.redirect(new URL("/admin/home", req.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  // ======================================
+  // 2. Basic Auth para o resto do site
+  // ======================================
   const authHeader = req.headers.get("authorization");
 
   const username = process.env.BASIC_AUTH_USER || "admin";
@@ -22,7 +70,6 @@ export function middleware(req: Request) {
     }
   }
 
-  // Resposta 401 que força o popup do navegador
   return new NextResponse("Authentication required", {
     status: 401,
     headers: {
@@ -31,10 +78,7 @@ export function middleware(req: Request) {
   });
 }
 
-// Matcher atualizado:
-// - Ignora assets estáticos (_next, favicon, robots)
-// - Ignora rotas /api
-// - Protege todas as outras páginas
+// Middleware roda em tudo, exceto assets estáticos e /api
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|api).*)"],
 };

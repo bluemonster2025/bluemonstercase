@@ -6,7 +6,7 @@ import Link from "next/link";
 import BuyButton from "@/components/elements/BuyButton";
 import { Title, Text } from "@/components/elements/Texts";
 import { Skeleton } from "@/components/elements/Skeleton";
-import { useCategories } from "@/components/context/EcommerceContext/context";
+import { useCategories } from "@/context/EcommerceContext/context";
 
 export default function ProductCard({ produto }: ProductCardProps) {
   const { loading } = useCategories();

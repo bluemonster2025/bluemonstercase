@@ -27,7 +27,7 @@ export interface Sessao6Background {
   image_sessao6_mobile: Background;
 }
 
-export interface Logo {
+export interface LogoType {
   id: number;
   url: string;
 }
@@ -43,7 +43,7 @@ export interface PageACF {
   hero: Hero; // contém desktop + mobile
   acf: FeaturedFrameData;
   sessao6: Sessao6Background;
-  logo: Logo;
+  logo: LogoType;
   productBanner: BannerProduct;
 }
 

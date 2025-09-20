@@ -6,10 +6,10 @@ import BuyButton from "@/components/elements/BuyButton";
 import { Section } from "@/components/elements/Section";
 import { Title, Text } from "@/components/elements/Texts";
 import { Skeleton } from "@/components/elements/Skeleton";
-import { useCategories } from "@/components/context/EcommerceContext/context";
 import Link from "next/link";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
+import { useCategories } from "@/context/EcommerceContext/context";
 
 interface SectionProductsProps {
   title: string;
