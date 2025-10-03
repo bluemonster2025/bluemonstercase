@@ -1,5 +1,4 @@
-import { EcommerceProvider } from "@/context/EcommerceContext/context";
-import { UserProvider } from "@/context/UserContext/context";
+// app/layout.tsx
 import "@/styles/global.css";
 import { Open_Sans } from "next/font/google";
 
@@ -18,11 +17,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`min-h-screen flex flex-col ${open_sans.className}`}>
-        <main className="flex-1">
-          <UserProvider>
-            <EcommerceProvider>{children}</EcommerceProvider>
-          </UserProvider>
-        </main>
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   );

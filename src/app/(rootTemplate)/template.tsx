@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
-import EcommerceLayoutWrapper from "@/components/layouts/EcommerceLayout/EcommerceLayoutWrapper";
+import EcommerceLayout from "@/components/layouts/EcommerceLayout";
 
 type RootTemplateProps = {
   children: ReactNode;
 };
 
 export default function RootTemplate({ children }: RootTemplateProps) {
-  return <EcommerceLayoutWrapper>{children}</EcommerceLayoutWrapper>;
+  return <EcommerceLayout>{children}</EcommerceLayout>;
 }

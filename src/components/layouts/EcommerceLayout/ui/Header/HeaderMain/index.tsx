@@ -3,19 +3,26 @@
 import Link from "next/link";
 import Icon from "@/components/elements/Icon";
 import { Section } from "@/components/elements/Section";
-import { LogoType } from "@/types/home";
-import Logo from "../Logo";
+import Logo from "../../Logo";
+import { Skeleton } from "@/components/elements/Skeleton";
 
 interface Props {
-  data: LogoType;
+  logo?: { sourceUrl: string; altText?: string };
+  loading?: boolean;
 }
 
-export default function HeaderMain({ data }: Props) {
+export default function HeaderMain({ logo, loading }: Props) {
   return (
     <Section>
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
         {/* Logo */}
-        <Logo logo={data} />
+        {loading || !logo ? (
+          <div className="w-[112px] h-[112px] flex items-center">
+            <Skeleton className="w-[108px] h-[38px] bg-gray-200 animate-pulse rounded" />
+          </div>
+        ) : (
+          <Logo logo={logo} />
+        )}
 
         {/* Busca */}
         <Link

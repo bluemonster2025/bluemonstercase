@@ -1,36 +1,81 @@
-import { fetchPageData } from "@/app/utils/fetchPageData";
-import BannerSection6 from "@/components/layouts/EcommerceLayout/Home/BannerSection6";
 import FeaturedFrame from "@/components/layouts/EcommerceLayout/Home/FeaturedFrame";
 import HeroComponent from "@/components/layouts/EcommerceLayout/Home/Hero";
-import SectionProducts from "@/components/layouts/EcommerceLayout/Home/SectionProducts";
-import { getHomeFeaturedProductsBySession } from "@/lib/wp/wpData";
+import HomeBanner from "@/components/layouts/EcommerceLayout/Home/HomeBanner";
+import SectionProductsWrapper from "@/components/layouts/EcommerceLayout/Home/SectionProducts/SectionProductsWrapper";
+import { PageHome } from "@/types/home";
 
-export default async function Home() {
-  const pageData = await fetchPageData("home");
+import { UIProduct } from "@/types/uIProduct";
+import { mapSessionProductToUIProduct } from "@/utils/mappers/mapProductUI";
 
-  const session2 = await getHomeFeaturedProductsBySession(203, 2);
-  const session3 = await getHomeFeaturedProductsBySession(203, 3);
-  const session5 = await getHomeFeaturedProductsBySession(203, 5);
-  const session7 = await getHomeFeaturedProductsBySession(203, 7);
-  const session8 = await getHomeFeaturedProductsBySession(203, 8);
+interface HomeTemplateProps {
+  page: PageHome;
+}
+
+export default async function Home({ page }: HomeTemplateProps) {
+  const bgHeroDesktop = page.hero?.desktop?.src;
+  const bgHeroDesktopMobile = page.hero?.mobile?.src;
+
+  const produtosSessao2: UIProduct[] =
+    page.sessao2?.featuredProducts?.map(mapSessionProductToUIProduct) || [];
+
+  const produtosSessao3: UIProduct[] =
+    page.sessao3?.featuredProducts?.map(mapSessionProductToUIProduct) || [];
+
+  const sessao4Banner = page.sessao4?.image?.src;
+  const sessao4Title = page.sessao4?.title;
+  const sessao4Text = page.sessao4?.text?.trim() || "<p></p>";
+  const sessao4LinkButton = page.sessao4?.linkButton;
+
+  const produtosSessao5: UIProduct[] =
+    page.sessao5?.featuredProducts?.map(mapSessionProductToUIProduct) || [];
+
+  const bgBannerDesktop = page.banner?.desktop?.src;
+  const bgBannerDesktopMobile = page.banner?.mobile?.src;
+
+  const produtosSessao7: UIProduct[] =
+    page.sessao7?.featuredProducts?.map(mapSessionProductToUIProduct) || [];
 
   return (
     <main className="min-h-screen">
-      <HeroComponent data={pageData.hero} />
+      <HeroComponent
+        imgUrlDesktop={bgHeroDesktop}
+        imgUrlMobile={bgHeroDesktopMobile}
+      />
 
-      <SectionProducts title={session2.title} products={session2.products} />
+      <SectionProductsWrapper
+        title={page.sessao2?.title || "Sessão 2"}
+        products={produtosSessao2}
+        loading={!produtosSessao2.length}
+      />
 
-      <SectionProducts title={session3.title} products={session3.products} />
+      <SectionProductsWrapper
+        title={page.sessao3?.title || "Sessão 3"}
+        products={produtosSessao3}
+        loading={!produtosSessao3.length}
+      />
 
-      <FeaturedFrame data={pageData.acf} />
+      <FeaturedFrame
+        image={sessao4Banner}
+        title={sessao4Title}
+        text={sessao4Text}
+        linkButton={sessao4LinkButton}
+      />
 
-      <SectionProducts title={session5.title} products={session5.products} />
+      <SectionProductsWrapper
+        products={produtosSessao5}
+        loading={!produtosSessao5.length}
+      />
 
-      <BannerSection6 data={pageData.sessao6} />
+      <HomeBanner
+        imgUrlDesktop={bgBannerDesktop}
+        imgUrlMobile={bgBannerDesktopMobile}
+      />
 
-      <SectionProducts title={session7.title} products={session7.products} />
-
-      <SectionProducts title={session8.title} products={session8.products} />
+      <SectionProductsWrapper
+        title={page.sessao7?.title || "Sessão 7"}
+        products={produtosSessao7}
+        loading={!produtosSessao7.length}
+      />
     </main>
   );
 }

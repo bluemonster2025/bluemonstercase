@@ -6,51 +6,58 @@ import { Text, Title } from "@/components/elements/Texts";
 import BuyButton from "@/components/elements/BuyButton";
 import Icon from "@/components/elements/Icon";
 import { Skeleton } from "@/components/elements/Skeleton";
-import { Product, ProductVariation, ProductAttribute } from "@/types/product";
+import {
+  Product,
+  VariationNode,
+  VariationAttributeNode,
+  CategoryNode,
+  ImageNode,
+} from "@/types/product";
 import { useState } from "react";
+import { parsePrice } from "@/utils/parsePrice";
 
 interface Props {
   product: Product;
-  mainImage: string;
-  setMainImage: (src: string) => void;
-  selectedVar: ProductVariation | null;
-  variacoes: ProductVariation[];
-  setSelectedVar: (v: ProductVariation) => void;
+  mainImage?: ImageNode;
+  setMainImage: (img: ImageNode) => void;
+  selectedVar: VariationNode | null;
+  variacoes: VariationNode[];
+  setSelectedVar: (v: VariationNode) => void;
 }
 
 export default function ProductInfo({
   product,
-  mainImage,
   setMainImage,
   selectedVar,
   variacoes,
   setSelectedVar,
 }: Props) {
   const [openDropdown, setOpenDropdown] = useState(false);
+  const categories: CategoryNode[] = product.productCategories?.nodes || [];
+  const isSimpleProduct = !product.variations?.nodes?.length;
 
-  // ⚡ Função para converter attributes da variação para o formato ProductAttribute[]
-  const mapVariationAttributes = (
-    attrs?: { name: string; option: string }[]
-  ): ProductAttribute[] | undefined => {
-    return attrs?.map((a) => ({
-      name: a.name,
-      options: [a.option],
-    }));
-  };
+  const capitalizeFirstLetter = (text: string) =>
+    text.charAt(0).toUpperCase() + text.slice(1);
 
-  // Produto que será usado no BuyButton, sempre tipado como Product
-  const produtoParaComprar: Product = {
+  // Atributos da variação para o BuyButton
+  const attrsParaComprar: VariationAttributeNode[] =
+    selectedVar?.attributes?.nodes || [];
+
+  // Produto combinado para BuyButton
+  const produtoParaComprar = {
     ...product,
-    price: selectedVar?.price || product.price,
-    images: selectedVar?.image ? [selectedVar.image] : product.images,
-    attributes: mapVariationAttributes(selectedVar?.attributes),
+    price: selectedVar?.price || product.price || "0",
+    image: selectedVar?.image || product.image,
+    attributes: attrsParaComprar,
   };
+
+  const precoNumerico = parsePrice(produtoParaComprar.price);
 
   return (
     <div>
       {/* Categorias */}
       <div className="text-sm text-grayscale-350 font-semibold mb-5">
-        {product.categories?.map((c, i) => (
+        {categories.map((c, i) => (
           <span key={c.id}>
             {i > 0 && <span className="mx-2">{">"}</span>}
             {i === 0 ? (
@@ -68,11 +75,12 @@ export default function ProductInfo({
       </Title>
       <div
         className="mb-4 text-grayscale-350 text-sm/[24px]"
-        dangerouslySetInnerHTML={{ __html: product.short_description || "" }}
+        dangerouslySetInnerHTML={{ __html: product.shortDescription || "" }}
       />
 
       {/* Produto variável */}
-      {product.type === "variable" && (
+      {/* Produto variável */}
+      {!isSimpleProduct && (
         <div className="flex flex-col gap-2 py-4 relative">
           <Text className="mb-2 text-sm text-grayscale-350">
             Escolha a cor:
@@ -87,10 +95,15 @@ export default function ProductInfo({
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 relative rounded overflow-hidden">
                     <Image
-                      src={selectedVar.image?.src || "/images/placeholder.png"}
-                      alt={selectedVar.attributes
-                        ?.map((a) => a.option)
-                        .join(" / ")}
+                      src={
+                        selectedVar.image?.sourceUrl ||
+                        "/images/placeholder.png"
+                      }
+                      alt={
+                        selectedVar.attributes?.nodes
+                          .map((a) => a.value)
+                          .join(" / ") || ""
+                      }
                       fill
                       sizes="32px"
                       className="object-cover"
@@ -98,7 +111,9 @@ export default function ProductInfo({
                   </div>
 
                   <Text className="text-grayscale-450 text-sm">
-                    {selectedVar.attributes?.map((a) => a.option).join(" / ")}
+                    {selectedVar.attributes?.nodes
+                      .map((a) => capitalizeFirstLetter(a.value))
+                      .join(" / ")}
                   </Text>
                 </div>
               ) : (
@@ -116,15 +131,19 @@ export default function ProductInfo({
                       key={v.id}
                       onClick={() => {
                         setSelectedVar(v);
-                        setMainImage(v.image?.src || mainImage);
+                        if (v.image) setMainImage(v.image);
                         setOpenDropdown(false);
                       }}
                       className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
                     >
                       <div className="w-8 h-8 relative rounded overflow-hidden">
                         <Image
-                          src={v.image?.src || "/images/placeholder.png"}
-                          alt={v.attributes?.map((a) => a.option).join(" / ")}
+                          src={v.image?.sourceUrl || "/images/placeholder.png"}
+                          alt={
+                            v.attributes?.nodes
+                              .map((a) => a.value)
+                              .join(" / ") || ""
+                          }
                           fill
                           sizes="32px"
                           className="object-cover"
@@ -132,7 +151,9 @@ export default function ProductInfo({
                       </div>
 
                       <Text className="text-grayscale-450 text-sm">
-                        {v.attributes?.map((a) => a.option).join(" / ")}
+                        {v.attributes?.nodes
+                          .map((a) => capitalizeFirstLetter(a.value))
+                          .join(" / ")}
                       </Text>
                     </button>
                   ))}
@@ -145,33 +166,31 @@ export default function ProductInfo({
       {/* Preço */}
       <div className="mb-3 text-5xl font-semibold text-grayscale-400">
         R${" "}
-        {produtoParaComprar.price
-          ? new Intl.NumberFormat("pt-BR", {
-              style: "decimal",
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }).format(Number(produtoParaComprar.price))
-          : "-"}
+        {new Intl.NumberFormat("pt-BR", {
+          style: "decimal",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(precoNumerico)}
       </div>
 
       {/* Observação de compra */}
       <div
         className="mb-7 text-grayscale-400 text-xs/[16px]"
-        dangerouslySetInnerHTML={{ __html: product.purchase_note || "" }}
+        dangerouslySetInnerHTML={{ __html: product.purchaseNote || "" }}
       />
 
       {/* Botão de compra */}
       <div className="w-full md:w-[270px] mb-6">
         <BuyButton
-          produto={produtoParaComprar} // ✅ sempre tipado como Product
+          produto={produtoParaComprar}
           variant="secondary"
           title="Reserve o seu agora mesmo"
           icon="BsWhatsapp"
         />
       </div>
 
-      {/* Formas de pagamento para produtos simples */}
-      {product.type !== "variable" && (
+      {/* Formas de pagamento somente para produtos simples */}
+      {isSimpleProduct && (
         <div className="hidden md:block">
           <Title
             as="h3"

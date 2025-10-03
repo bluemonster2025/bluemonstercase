@@ -1,42 +1,46 @@
-// Tipo básico de categoria do frontend
-export type Category = {
-  id: number;
-  name: string;
-  slug: string;
-  display: string;
-  image?: {
-    src: string;
-    alt: string;
-  } | null;
-  cover?: string;
+export type CategoryImage = {
+  altText: string | null;
+  sourceUrl: string;
 };
 
-// types/category.ts
-export type WooCategory = {
-  id: number;
+export type CategoryVideo = {
+  mediaItemUrl: string;
+};
+
+export type CategoryBanner = {
+  categoryCoverDesktop?: CategoryImage;
+  categoryCoverMobile?: CategoryImage;
+  categoryCoverVideo?: CategoryVideo;
+};
+
+// Tipo bruto do GraphQL
+export interface CategoryNode {
+  id: string;
   name: string;
   slug: string;
-  description: string;
-  count: number;
-  parent: number;
-  image?: {
-    id: number;
-    src: string;
-    alt: string;
-  } | null;
-  acf?: {
-    category_cover_desktop?: {
-      url: string;
-    };
-    category_cover_mobile?: {
-      url: string;
-    };
-    category_cover_video?: { url: string };
+  uri: string;
+  description?: string | null;
+  count?: number;
+  image?: CategoryImage;
+  categoriaBanner?: {
+    categoryCoverDesktop?: { node: CategoryImage | null };
+    categoryCoverMobile?: { node: CategoryImage | null };
+    categoryCoverVideo?: { node: CategoryVideo | null };
   };
-};
+}
 
-export type WooCategoryWithCovers = WooCategory & {
-  cover_desktop?: string;
-  cover_mobile?: string;
-  cover_video?: string;
-};
+// Tipo final para o frontend
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  uri: string;
+  description?: string | null;
+  count?: number;
+  image?: CategoryImage;
+  categoriaBanner?: {
+    categoryCoverDesktop?: CategoryImage;
+    categoryCoverMobile?: CategoryImage;
+    categoryCoverVideo?: CategoryVideo;
+  };
+}

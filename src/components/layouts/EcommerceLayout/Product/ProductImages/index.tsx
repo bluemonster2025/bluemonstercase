@@ -1,29 +1,43 @@
 "use client";
 
 import Image from "next/image";
-import { Product, ProductVariation, ProductImage } from "@/types/product";
+import { Product, ImageNode, VariationNode } from "@/types/product";
 
-interface Props {
+interface ProductImagesProps {
   product: Product;
-  mainImage: string;
-  setMainImage: (src: string) => void;
-  selectedVar: ProductVariation | null;
-  setSelectedVar: (v: ProductVariation) => void;
-  variacoes: ProductVariation[];
+  mainImage?: ImageNode;
+  setMainImage: (img: ImageNode) => void;
+  selectedVar: VariationNode | null;
+  variacoes: VariationNode[];
+  setSelectedVar: (v: VariationNode) => void;
 }
-
-type Thumbnail = ProductVariation | ProductImage;
 
 export default function ProductImages({
   product,
   mainImage,
   setMainImage,
-  selectedVar,
-  setSelectedVar,
   variacoes,
-}: Props) {
-  const imagesToShow: Thumbnail[] =
-    product.type === "variable" ? variacoes : product.images || [];
+  setSelectedVar,
+}: ProductImagesProps) {
+  // Monta array de thumbs (ImageNode)
+  const imagesToShow: ImageNode[] = [];
+
+  if (product.image) imagesToShow.push(product.image);
+
+  product.galleryImages?.nodes.forEach((img) => {
+    if (!imagesToShow.find((i) => i.sourceUrl === img.sourceUrl)) {
+      imagesToShow.push(img);
+    }
+  });
+
+  variacoes.forEach((v) => {
+    if (
+      v.image &&
+      !imagesToShow.find((i) => i.sourceUrl === v.image!.sourceUrl)
+    ) {
+      imagesToShow.push(v.image);
+    }
+  });
 
   return (
     <div className="flex flex-col-reverse md:flex-row gap-4 items-center">
@@ -38,38 +52,23 @@ export default function ProductImages({
                   className="aspect-[0.61/1] md:aspect-[0.62/1] h-20 bg-gray-200 rounded animate-pulse"
                 />
               ))
-          : imagesToShow.map((imgOrVar, i) => {
-              const src =
-                "src" in imgOrVar
-                  ? imgOrVar.src
-                  : imgOrVar.image?.src || "/images/placeholder.png";
-
-              const isSelected =
-                product.type === "variable"
-                  ? selectedVar?.id === (imgOrVar as ProductVariation).id
-                  : mainImage === src;
-
+          : imagesToShow.map((img) => {
               return (
                 <button
-                  key={i}
+                  key={img.sourceUrl}
                   onClick={() => {
-                    setMainImage(src);
-                    if (product.type === "variable") {
-                      setSelectedVar(imgOrVar as ProductVariation);
-                    }
+                    setMainImage(img);
+                    const variation = variacoes.find(
+                      (v) => v.image?.sourceUrl === img.sourceUrl
+                    );
+                    if (variation) setSelectedVar(variation);
                   }}
-                  className={`overflow-hidden cursor-pointer ${
-                    isSelected ? "border-gray-700" : "border-transparent"
-                  }`}
+                  className={`overflow-hidden cursor-pointer rounded-lg`}
                 >
                   <div className="aspect-[0.61/1] md:aspect-square h-20 relative">
                     <Image
-                      src={src}
-                      alt={
-                        product.type === "variable"
-                          ? `Variação ${(imgOrVar as ProductVariation).id}`
-                          : `${product.name} ${i}`
-                      }
+                      src={img.sourceUrl}
+                      alt={img.altText || product.name}
                       fill
                       sizes="80px"
                       className="object-contain"
@@ -82,14 +81,18 @@ export default function ProductImages({
 
       {/* Imagem principal */}
       <div className="flex-1">
-        <div className="aspect-[0.97/1] md:aspect-[0.96/1] h-[270px] relative overflow-hidden">
-          <Image
-            src={mainImage || "/images/placeholder.png"}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 600px"
-            className="object-contain"
-          />
+        <div className="aspect-[0.97/1] md:aspect-[0.96/1] h-[270px] relative overflow-hidden rounded-lg">
+          {mainImage ? (
+            <Image
+              src={mainImage.sourceUrl}
+              alt={mainImage.altText || product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 600px"
+              className="object-contain"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg" />
+          )}
         </div>
       </div>
     </div>

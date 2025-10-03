@@ -1,31 +1,20 @@
-"use client";
-
+// components/layouts/EcommerceLayout.tsx
 import { ReactNode } from "react";
-import { PageACF } from "@/types/home";
-import { usePathname } from "next/navigation";
-import Header from "./ui/Header";
-import Footer from "./ui/Footer";
-import NewsletterSection from "./ui/NewsletterSection";
+import { SiteSettings } from "@/types/siteSettings";
+import { getSiteSettings } from "@/lib/siteSettings";
+import EcommerceLayoutClient from "./ui/EcommerceLayoutClient";
 
-interface EcommerceLayoutProps {
+interface Props {
   children: ReactNode;
-  globalData: PageACF;
-  pageData: PageACF;
 }
 
-export default function EcommerceLayout({
-  children,
-  globalData,
-}: EcommerceLayoutProps) {
-  const pathname = usePathname();
-  const hideHeader = pathname.startsWith("/buscar");
+export default async function EcommerceLayout({ children }: Props) {
+  // Server-side fetch
+  const settings: SiteSettings | null = await getSiteSettings();
 
   return (
-    <div className="relative overflow-x-hidden">
-      {!hideHeader && <Header logo={globalData.logo} />}
+    <EcommerceLayoutClient logo={settings?.logo}>
       {children}
-      <NewsletterSection />
-      <Footer data={globalData.logo} />
-    </div>
+    </EcommerceLayoutClient>
   );
 }

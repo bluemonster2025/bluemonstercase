@@ -1,14 +1,22 @@
-import { wcUrl, fetchWc } from "./wc";
+import { Product } from "@/types/product";
+import { PageProducts } from "@/types/pageProducts";
 
-export async function getProductById(id: string) {
-  return fetchWc(wcUrl(`/products/${id}`));
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const res = await fetch(
+    `${BASE_URL}/api/product/${encodeURIComponent(slug)}`,
+    {
+      cache: "no-store",
+    }
+  );
+  if (!res.ok) return null;
+  return (await res.json()) ?? null;
 }
 
-export async function getProductBySlug(slug: string) {
-  // ⚠️ WooCommerce retorna ARRAY mesmo que só exista 1 produto
-  return fetchWc(wcUrl(`/products`, { slug }));
-}
-
-export async function getProducts(params: Record<string, string>) {
-  return fetchWc(wcUrl(`/products`, params));
+export async function getPageProduto(): Promise<PageProducts | null> {
+  const res = await fetch(`${BASE_URL}/api/pageProduct`, { cache: "no-store" });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json ?? null;
 }

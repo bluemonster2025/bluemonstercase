@@ -1,25 +1,27 @@
-import HeaderMain from "./HeaderMain";
 import HeaderCategories from "./HeaderCategories";
-import HeaderTop from "./HeaderTop";
-import { LogoType } from "@/types/home";
+import HeaderMain from "./HeaderMain";
 import HeaderMobile from "./HeaderMobile";
+import HeaderTop from "./HeaderTop";
 
 interface Props {
-  logo: LogoType;
+  logo?: { sourceUrl: string; altText?: string };
+  loading?: boolean;
+  hideHeaderFooter?: boolean;
 }
 
-export default function Header({ logo }: Props) {
+export default function Header({ logo, loading, hideHeaderFooter }: Props) {
+  if (hideHeaderFooter) return null;
   return (
     <header className="w-full">
       {/* Desktop */}
       <div className="hidden lg:block">
         <HeaderTop />
-        <HeaderMain data={logo} />
+        <HeaderMain logo={logo} loading={loading} />
         <HeaderCategories />
       </div>
 
       {/* Mobile */}
-      <HeaderMobile data={logo} />
+      <HeaderMobile logo={logo} />
     </header>
   );
 }

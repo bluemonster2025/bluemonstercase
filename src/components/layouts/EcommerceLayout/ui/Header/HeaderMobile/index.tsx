@@ -3,21 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/elements/Icon";
-import { LogoType } from "@/types/home";
-import HeaderLogo from "../Logo";
 import HeaderCategories from "../HeaderCategories";
+import Logo from "../../Logo";
 
 interface Props {
-  data: LogoType;
+  logo?: { sourceUrl: string; altText?: string };
 }
 
-export default function HeaderMobile({ data }: Props) {
+export default function HeaderMobile({ logo }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <header className="w-full flex items-center justify-between p-4 lg:hidden">
       {/* Logo */}
-      <HeaderLogo logo={data} />
+      <Logo logo={logo} />
 
       {/* Botão de menu */}
       <button
@@ -32,7 +31,7 @@ export default function HeaderMobile({ data }: Props) {
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
           {/* Header do menu */}
           <div className="flex items-center justify-between p-4">
-            <HeaderLogo logo={data} />
+            <Logo logo={logo} />
 
             <button
               onClick={() => setIsOpen(false)}

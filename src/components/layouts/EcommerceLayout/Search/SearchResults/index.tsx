@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/types/product";
 import { Skeleton } from "@/components/elements/Skeleton";
 import BuyButton from "@/components/elements/BuyButton";
 import { Title, Text } from "@/components/elements/Texts";
+import { parsePrice } from "@/utils/parsePrice";
 
 type SearchResultsProps = {
   products: Product[];
@@ -20,13 +22,34 @@ export default function SearchResults({
 }: SearchResultsProps) {
   const skeletonCount = 4;
 
+  // guarda o último termo de busca
+  const lastSearch = useRef<string | null>(null);
+  // flag de controle para permitir skeleton
+  const allowSkeleton = useRef(true);
+
+  // sempre que o termo de busca mudar, libera o skeleton de novo
+  useEffect(() => {
+    if (lastSearch.current !== search) {
+      allowSkeleton.current = true;
+      lastSearch.current = search;
+    }
+  }, [search]);
+
+  const shouldShowSkeleton =
+    loadingProducts && allowSkeleton.current && products.length === 0;
+
+  if (shouldShowSkeleton) {
+    // após mostrar uma vez, bloqueia até mudar o search de novo
+    allowSkeleton.current = false;
+  }
+
   return (
     <div>
       <Title as="h3" className="text-[16px] font-semibold mb-8">
         Resultados da busca por &quot;{search}&quot;
       </Title>
 
-      {loadingProducts ? (
+      {shouldShowSkeleton ? (
         <div className="grid gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mb-8">
           {[...Array(skeletonCount)].map((_, i) => (
             <div key={i} className="flex flex-col h-full">
@@ -47,22 +70,21 @@ export default function SearchResults({
             <div key={product.id} className="flex flex-col">
               <Link href={product.slug ? `/produto/${product.slug}` : "#"}>
                 <div className="relative w-full aspect-2/1 rounded-lg overflow-hidden">
-                  {/* Tags */}
-                  {product.tags && product.tags.length > 0 && (
+                  {product.tag && product.tag.length > 0 && (
                     <div className="absolute top-0 right-0 flex gap-1 z-10">
                       <span
-                        key={product.tags[0].id}
+                        key={product.tag}
                         className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10"
                       >
-                        {product.tags[0].name}
+                        {product.tag}
                       </span>
                     </div>
                   )}
 
-                  {product.images?.[0] ? (
+                  {product.image?.sourceUrl ? (
                     <Image
-                      src={product.images[0].src}
-                      alt={product.images[0].alt || product.name}
+                      src={product.image.sourceUrl}
+                      alt={product.image.altText || product.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 600px"
                       className="object-contain"
@@ -83,28 +105,19 @@ export default function SearchResults({
                   </Title>
 
                   <Text className="text-grayscale-400 mt-2 flex items-baseline gap-1">
-                    {product.price
-                      ? (() => {
-                          const formatted = new Intl.NumberFormat("pt-BR", {
-                            style: "decimal",
+                    {product.price !== undefined ? (
+                      <>
+                        <span className="text-xs font-medium">R$</span>
+                        <span className="text-[32px] font-bold">
+                          {new Intl.NumberFormat("pt-BR", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
-                          }).format(Number(product.price));
-
-                          const [reais, centavos] = formatted.split(",");
-                          return (
-                            <>
-                              <span className="text-xs font-medium">R$</span>
-                              <span className="text-[32px] font-bold">
-                                {reais}
-                              </span>
-                              <span className="text-xs font-medium">
-                                ,{centavos}
-                              </span>
-                            </>
-                          );
-                        })()
-                      : "-"}
+                          }).format(parsePrice(product.price))}
+                        </span>
+                      </>
+                    ) : (
+                      "-"
+                    )}
                   </Text>
                 </div>
               </Link>

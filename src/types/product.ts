@@ -1,55 +1,98 @@
-export type ProductImage = {
-  id?: number;
-  src: string;
-  alt?: string;
-};
+// src/types/product.ts
 
-export type ProductCategory = {
-  id: number;
+// --- Tipos finais usados no frontend ---
+export interface ImageNode {
+  sourceUrl: string;
+  altText: string;
+}
+
+export interface CategoryNode {
+  id: string;
   name: string;
   slug: string;
+  parent?: { node: CategoryNode };
+}
+
+export interface VariationAttributeNode {
+  attributeId: string;
+  name: string;
+  value: string;
+}
+
+export type VariationNode = {
+  id: string;
+  name: string;
+  price: string;
+  purchaseNote?: string;
+  image?: ImageNode;
+  attributes?: { nodes: VariationAttributeNode[] };
 };
 
-export type ProductAttribute = {
+export type RelatedProductNode = {
+  id: string;
   name: string;
-  options: string[];
-};
-
-export type Product = {
-  id: number;
-  name: string;
-  price: number;
-  images?: ProductImage[];
-  description?: string;
-  short_description?: string;
+  price: string;
+  image?: ImageNode;
   slug?: string;
-  categories?: ProductCategory[];
-  attributes?: ProductAttribute[];
-  type?: string; // para produtos variáveis
-  purchase_note?: string;
-  upsell_ids?: number[];
-  cross_sell_ids?: number[];
-  default_attributes?: { name: string; option: string }[]; // adicionando aqui
-  link?: string;
-  tags?: {
-    id: number;
-    name: string;
-    slug: string;
-  }[];
+  tags?: string[]; // <- agora pode ter múltiplas tags
 };
 
-// Props do ProductCard
+export interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  shortDescription?: string;
+  price: string;
+  purchaseNote?: string;
+  slug?: string;
+  uri?: string;
+  image?: ImageNode;
+  galleryImages?: { nodes: ImageNode[] };
+  productCategories?: { nodes: CategoryNode[] };
+  variations?: { nodes: VariationNode[] };
+  attributes?: VariationAttributeNode[];
+  crossSell?: { nodes: RelatedProductNode[] };
+  upsell?: { nodes: RelatedProductNode[] };
+  tag?: string;
+}
+
 export type ProductCardProps = {
   produto: Product;
 };
 
-export interface BannerProduct {
-  id: number;
-  url: string;
-  title?: string;
+// Tipos crus (da API)
+export interface RawRelatedProduct {
+  id: string;
+  name: string;
+  price: string;
+  image?: ImageNode;
+  type: "simple" | "variable" | "external" | "group";
+  slug: string;
+  tag?: string;
 }
 
-// Props do BuyButton
+export interface RawTag {
+  name: string;
+}
+
+export interface RawProduct {
+  id: string;
+  name: string;
+  description?: string;
+  shortDescription?: string;
+  purchaseNote?: string;
+  slug?: string;
+  price?: string;
+  image?: ImageNode;
+  galleryImages?: { nodes: ImageNode[] };
+  variations?: { nodes: VariationNode[] };
+  productCategories?: { nodes: CategoryNode[] };
+  crossSell?: { nodes: RawRelatedProduct[] };
+  upsell?: { nodes: RawRelatedProduct[] };
+  related?: { nodes: RawRelatedProduct[] };
+  productTags?: { nodes: RawTag[] };
+}
+
 export type BuyButtonProps = {
   produto?: Product;
   title: string;
@@ -57,24 +100,4 @@ export type BuyButtonProps = {
   variant?: "primary" | "secondary";
   fontWeight?: string;
   href?: string;
-};
-
-// Props do ProductDetail
-export type ProductDetailProps = {
-  produto: Product;
-};
-
-// Tipagem para variações
-export type ProductVariation = {
-  id: number;
-  price: number;
-  image?: { src: string };
-  attributes: { name: string; option: string }[];
-};
-
-export type AdminProduct = {
-  id: number;
-  name: string;
-  price: number;
-  regular_price?: string; // usado no envio para a API
 };

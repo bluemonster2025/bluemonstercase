@@ -2,44 +2,29 @@ import { Section } from "@/components/elements/Section";
 import { Text, Title } from "@/components/elements/Texts";
 import Link from "next/link";
 import { footerContent } from "./content";
-import Image from "next/image";
 import { LinkExternal } from "@/components/elements/LinkExternal/LinkExternal";
 import Icon from "@/components/elements/Icon";
-import { LogoType } from "@/types/home";
+
+import { Skeleton } from "@/components/elements/Skeleton";
+import Logo from "../Logo";
 
 interface Props {
-  data: LogoType;
-  fallbackImage?: string;
+  logo?: { sourceUrl: string; altText?: string };
+  loading?: boolean;
 }
 
-export default function Footer({
-  data,
-  fallbackImage = "/fallback.jpg",
-}: Props) {
-  const imgUrl = data?.url || fallbackImage;
-
+export default function Footer({ logo, loading }: Props) {
   return (
     <>
       <Section>
         <div className="flex gap-4 items-center justify-between">
-          <Link href="/" aria-label="Ncell">
-            {imgUrl ? (
-              <>
-                <div className="relative w-28 aspect-square">
-                  <Image
-                    src={imgUrl}
-                    alt="Logo Ncell"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 112px"
-                    className="rounded-lg object-contain"
-                    priority
-                  />
-                </div>
-              </>
-            ) : (
-              <p>Nenhum logo cadastrado</p>
-            )}
-          </Link>
+          {loading || !logo ? (
+            <div className="w-[112px] h-[112px] flex items-center">
+              <Skeleton className="w-[108px] h-[38px] bg-gray-200 animate-pulse rounded" />
+            </div>
+          ) : (
+            <Logo logo={logo} />
+          )}
 
           <div className="flex gap-2">
             <LinkExternal href="/" aria-label="Instagram">

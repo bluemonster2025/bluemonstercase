@@ -1,7 +1,7 @@
 "use client";
 
-import BuscarTemplate from "@/components/templates/Buscar";
+import SearchTemplate from "@/components/templates/Search";
 
-export default function BuscarPage() {
-  return <BuscarTemplate />;
+export default function SearchPage() {
+  return <SearchTemplate />;
 }

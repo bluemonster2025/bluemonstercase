@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Category } from "@/types/category";
 import { Skeleton } from "@/components/elements/Skeleton";
 import { Text } from "@/components/elements/Texts";
+import { Category } from "@/types/category";
 
 type CategoriesListProps = {
   categories: Category[];
@@ -37,10 +37,10 @@ export default function CategoriesList({
           href={`/categoria/${cat.slug}`}
           className="relative group overflow-hidden aspect-[0.60/1] shadow hover:scale-105 transition"
         >
-          {cat.image?.src && (
+          {cat.image?.sourceUrl && (
             <Image
-              src={cat.image.src}
-              alt={cat.image?.alt || cat.name}
+              src={cat.image.sourceUrl}
+              alt={cat.image?.altText || cat.name}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
               className="object-cover w-full h-full"

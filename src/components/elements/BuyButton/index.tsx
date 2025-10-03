@@ -1,9 +1,24 @@
 "use client";
 
-import { BuyButtonProps } from "@/types/product";
 import { ButtonPrimary, ButtonSecondary } from "@/components/elements/Button";
 import Icon from "@/components/elements/Icon";
 import { Text } from "@/components/elements/Texts";
+import { BuyButtonProps } from "@/types/product";
+
+// Função para formatar preço em BRL
+const formatPriceBR = (price?: string | number): string => {
+  if (!price) return "0,00";
+
+  const numberPrice =
+    typeof price === "number"
+      ? price
+      : parseFloat(price.replace(/[^0-9,]+/g, "").replace(",", "."));
+
+  return new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numberPrice);
+};
 
 export default function BuyButton({
   produto,
@@ -22,10 +37,10 @@ export default function BuyButton({
   }
 
   const produtoNome = produto?.name || "Produto";
-  const produtoPreco = produto?.price ?? "";
+  const produtoPreco = formatPriceBR(produto?.price);
 
   const linkProduto = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
-    `Olá! Tenho interesse no produto: ${produtoNome}, preço: R$${produtoPreco}`
+    `Olá! Tenho interesse no produto: ${produtoNome}, preço: R$ ${produtoPreco}`
   )}`;
 
   const linkDefault = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
@@ -33,7 +48,6 @@ export default function BuyButton({
   )}`;
 
   const finalHref = href ?? (produto ? linkProduto : linkDefault);
-
   const IconElement = icon ? <Icon name={icon} size={24} /> : null;
 
   return variant === "primary" ? (
