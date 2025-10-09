@@ -27,10 +27,8 @@ export function useHomeEditor(initialPage: PageHome) {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Atualiza apenas o Hero quando necessário
-   */
   const handleHeroChange = (hero: HeroData) => {
     setPageState((prev) => ({
       ...prev,
@@ -50,23 +48,21 @@ export function useHomeEditor(initialPage: PageHome) {
     }));
   };
 
-  /**
-   * Salva alterações parciais da página
-   */
   const handleSave = async () => {
     if (!pageState.databaseId) {
       console.error("❌ databaseId não definido", pageState);
+      setError("Database ID não definido!");
       return;
     }
 
     setIsSaving(true);
+    setError(null);
 
     try {
       const bodyData = {
         pageId: pageState.databaseId,
         acfFields: {
           homeHero: {
-            // Só envia IDs válidos; undefined mantém o valor atual no WP
             hero_image: Number.isInteger(pageState.hero?.desktop?.databaseId)
               ? pageState.hero?.desktop?.databaseId
               : undefined,
@@ -76,11 +72,8 @@ export function useHomeEditor(initialPage: PageHome) {
               ? pageState.hero?.mobile?.databaseId
               : undefined,
           },
-          // Aqui você pode adicionar outros campos da página que queira salvar
         },
       };
-
-      console.log("🟢 Salvando com bodyData:", bodyData);
 
       const res = await fetch("/api/pageHome", {
         method: "POST",
@@ -90,10 +83,10 @@ export function useHomeEditor(initialPage: PageHome) {
       });
 
       const data = await res.json();
-      console.log("🟣 Resposta do servidor:", data);
 
       if (!res.ok || data.error) {
         console.error("❌ Erro ao salvar:", data.error || data);
+        setError(data.error || "Erro desconhecido ao salvar.");
         return;
       }
 
@@ -101,10 +94,11 @@ export function useHomeEditor(initialPage: PageHome) {
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error("🔥 Erro ao salvar:", err);
+      setError("Erro ao salvar. Verifique o console.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  return { pageState, isSaving, saved, handleHeroChange, handleSave };
+  return { pageState, isSaving, saved, error, handleHeroChange, handleSave };
 }

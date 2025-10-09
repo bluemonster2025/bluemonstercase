@@ -31,6 +31,7 @@ interface MediaItemsResponse {
   };
 }
 
+// GET: buscar mídias
 export async function GET() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -76,6 +77,61 @@ export async function GET() {
     }
 
     return NextResponse.json(result.data?.mediaItems?.nodes || []);
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Erro interno" },
+      { status: 500 }
+    );
+  }
+}
+
+// ========================
+// POST → upload de mídia
+// ========================
+export async function POST(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    const formData = await req.formData();
+    const file = formData.get("file") as Blob;
+
+    if (!file) {
+      return NextResponse.json(
+        { error: "Arquivo não enviado" },
+        { status: 400 }
+      );
+    }
+
+    const wpForm = new FormData();
+    wpForm.append("file", file, (file as File).name);
+
+    // Upload server-side para o WordPress
+    const res = await fetch(`${WP_URL}/wp-json/wp/v2/media`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`, // mesmo token do cookie
+      },
+      body: wpForm,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return NextResponse.json({ error: data }, { status: res.status });
+    }
+
+    // Retorna a mídia criada
+    return NextResponse.json({
+      databaseId: data.id,
+      sourceUrl: data.source_url,
+      altText: data.alt_text,
+      title: data.title.rendered,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Erro interno" },

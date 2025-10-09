@@ -5,13 +5,14 @@ import { ButtonSecondary } from "@/components/elements/Button";
 import { Section } from "@/components/elements/Section";
 import { PageHome } from "@/types/home";
 import { useHomeEditor } from "@/hooks/useHomeEditor";
+import { SaveModal } from "@/components/layouts/AdminLayout/ui/SaveModal";
 
 interface Props {
   page: PageHome;
 }
 
 export default function HomeEditorTemplate({ page }: Props) {
-  const { pageState, isSaving, saved, handleHeroChange, handleSave } =
+  const { pageState, isSaving, saved, error, handleHeroChange, handleSave } =
     useHomeEditor(page);
 
   if (!pageState) return <p>Página não definida</p>;
@@ -21,13 +22,15 @@ export default function HomeEditorTemplate({ page }: Props) {
       <HeroEditor
         desktop={pageState.hero?.desktop}
         mobile={pageState.hero?.mobile}
-        onChange={handleHeroChange} // pai controla todo o estado
+        onChange={handleHeroChange}
       />
 
       <div className="flex justify-end">
         <ButtonSecondary disabled={isSaving} onClick={handleSave}>
           {isSaving ? "Salvando..." : saved ? "Salvo ✅" : "Salvar alterações"}
         </ButtonSecondary>
+
+        <SaveModal saved={saved} error={error} />
       </div>
     </Section>
   );

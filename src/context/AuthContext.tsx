@@ -1,6 +1,5 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
@@ -24,7 +23,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function fetchUser() {
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch("/api/auth/me", {
+        credentials: "include", // 🔥 garante que cookies sejam enviados
+      });
+
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -37,10 +39,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
   }
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   useEffect(() => {
     fetchUser();

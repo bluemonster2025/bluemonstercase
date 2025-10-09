@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function Header({ logo }: Props) {
-  const { user, logout, loading } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
