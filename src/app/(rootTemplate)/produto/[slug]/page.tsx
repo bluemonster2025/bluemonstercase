@@ -1,5 +1,4 @@
-// app/(ecommerce)/product/[slug]/page.tsx
-import ProductTemplate from "@/components/templates/Product";
+import ProductTemplate from "@/components/templates/Site/Product";
 import { getProductBySlug, getPageProduto } from "@/lib/products";
 import { notFound } from "next/navigation";
 

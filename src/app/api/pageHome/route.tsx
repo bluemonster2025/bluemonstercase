@@ -1,34 +1,39 @@
-// src/app/api/pageHome/route.ts
+"use server";
+
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { mapHome } from "@/utils/mappers/mapHome";
 import { RawHome, PageHome } from "@/types/home";
 
 const WP_URL = process.env.WOO_SITE_URL!;
 
-interface GraphQLResponse {
-  data?: { page?: RawHome };
+// Tipos GraphQL
+interface GraphQLErrorItem {
+  message: string;
+  locations?: { line: number; column: number }[];
+  path?: string[];
+  extensions?: Record<string, unknown>;
 }
+interface GraphQLResponse<T = unknown> {
+  data?: T;
+  errors?: GraphQLErrorItem[];
+}
+type AcfFields = Record<string, unknown>;
 
+// ========================
+// GET → página Home
+// ========================
 export async function GET() {
   const query = `
     query Home {
       page(id: "home", idType: URI) {
+        databaseId
         id
         slug
         title
         homeHero {
-          heroImage {
-            node {
-              altText
-              sourceUrl
-            }
-          }
-          heroImageMobile {
-            node {
-              altText
-              sourceUrl
-            }
-          }
+          heroImage { node { altText sourceUrl } }
+          heroImageMobile { node { altText sourceUrl } }
         }
         homeSessao2 {
           titleSessao2
@@ -38,24 +43,11 @@ export async function GET() {
                 id
                 uri
                 title
-                productTags {
-                  nodes {
-                    name
-                  }
-                }
-                featuredImage {
-                  node {
-                    sourceUrl
-                    altText
-                  }
-                }
+                productTags { nodes { name } }
+                featuredImage { node { sourceUrl altText } }
               }
-              ... on SimpleProduct {
-                price
-              }
-              ... on VariableProduct {
-                price
-              }
+              ... on SimpleProduct { price }
+              ... on VariableProduct { price }
             }
           }
         }
@@ -67,34 +59,16 @@ export async function GET() {
                 id
                 uri
                 title
-                productTags {
-                  nodes {
-                    name
-                  }
-                }
-                featuredImage {
-                  node {
-                    sourceUrl
-                    altText
-                  }
-                }
+                productTags { nodes { name } }
+                featuredImage { node { sourceUrl altText } }
               }
-              ... on SimpleProduct {
-                price
-              }
-              ... on VariableProduct {
-                price
-              }
+              ... on SimpleProduct { price }
+              ... on VariableProduct { price }
             }
           }
         }
         homeSessao4 {
-          imageSessao4 {
-            node {
-              altText
-              sourceUrl
-            }
-          }
+          imageSessao4 { node { altText sourceUrl } }
           titleSessao4
           textSessao4
           linkButtonSessao4
@@ -106,40 +80,17 @@ export async function GET() {
                 id
                 uri
                 title
-                productTags {
-                  nodes {
-                    name
-                  }
-                }
-                featuredImage {
-                  node {
-                    sourceUrl
-                    altText
-                  }
-                }
+                productTags { nodes { name } }
+                featuredImage { node { sourceUrl altText } }
               }
-              ... on SimpleProduct {
-                price
-              }
-              ... on VariableProduct {
-                price
-              }
+              ... on SimpleProduct { price }
+              ... on VariableProduct { price }
             }
           }
         }
         homeBanner {
-          homeBannerDesktop {
-            node {
-              altText
-              sourceUrl
-            }
-          }
-          homeBannerMobile {
-            node {
-              altText
-              sourceUrl
-            }
-          }
+          homeBannerDesktop { node { altText sourceUrl } }
+          homeBannerMobile { node { altText sourceUrl } }
         }
         homeSessao7 {
           titleSessao7
@@ -149,30 +100,16 @@ export async function GET() {
                 id
                 uri
                 title
-                productTags {
-                  nodes {
-                    name
-                  }
-                }
-                featuredImage {
-                  node {
-                    sourceUrl
-                    altText
-                  }
-                }
+                productTags { nodes { name } }
+                featuredImage { node { sourceUrl altText } }
               }
-              ... on SimpleProduct {
-                price
-              }
-              ... on VariableProduct {
-                price
-              }
+              ... on SimpleProduct { price }
+              ... on VariableProduct { price }
             }
           }
         }
       }
     }
-
   `;
 
   try {
@@ -183,27 +120,82 @@ export async function GET() {
       cache: "no-store",
     });
 
-    if (!res.ok) {
+    const result: GraphQLResponse<{ page: RawHome }> = await res.json();
+
+    if (!res.ok || !result.data?.page) {
       return NextResponse.json(
         { error: "Erro ao buscar página" },
-        { status: res.status }
-      );
-    }
-
-    const result: GraphQLResponse = await res.json();
-
-    if (!result.data?.page) {
-      return NextResponse.json(
-        { error: "Página não encontrada" },
-        { status: 404 }
+        { status: res.status || 404 }
       );
     }
 
     const page: PageHome = mapHome(result.data.page);
-
     return NextResponse.json(page);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  }
+}
+
+// ========================
+// POST → atualizar ACF
+// ========================
+interface UpdateACFResponse {
+  updateACFFields: { success: boolean };
+}
+
+export async function POST(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    const data: { pageId: number; acfFields: AcfFields } = await req.json();
+
+    const mutation = `
+      mutation UpdateAnyACF($input: UpdateACFFieldsInput!) {
+        updateACFFields(input: $input) {
+          success
+        }
+      }
+    `;
+
+    const variables = {
+      input: {
+        pageId: data.pageId,
+        acfFields: JSON.stringify(data.acfFields),
+      },
+    };
+
+    const res = await fetch(`${WP_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ query: mutation, variables }),
+    });
+
+    const result: GraphQLResponse<UpdateACFResponse> = await res.json();
+
+    if (!res.ok || result.errors?.length) {
+      return NextResponse.json(
+        {
+          error:
+            result.errors?.map((e) => e.message).join(", ") || "Erro ao salvar",
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Erro interno" },
+      { status: 500 }
+    );
   }
 }

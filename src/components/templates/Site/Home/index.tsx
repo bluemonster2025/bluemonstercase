@@ -3,7 +3,6 @@ import HeroComponent from "@/components/layouts/EcommerceLayout/Home/Hero";
 import HomeBanner from "@/components/layouts/EcommerceLayout/Home/HomeBanner";
 import SectionProductsWrapper from "@/components/layouts/EcommerceLayout/Home/SectionProducts/SectionProductsWrapper";
 import { PageHome } from "@/types/home";
-
 import { UIProduct } from "@/types/uIProduct";
 import { mapSessionProductToUIProduct } from "@/utils/mappers/mapProductUI";
 

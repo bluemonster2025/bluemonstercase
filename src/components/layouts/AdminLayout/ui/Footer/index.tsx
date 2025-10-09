@@ -1,3 +1,5 @@
+"use client";
+
 import { Section } from "@/components/elements/Section";
 import { Text } from "@/components/elements/Texts";
 import Link from "next/link";
@@ -8,7 +10,6 @@ export default function Footer() {
       {/* Bloco de suporte */}
       <Section className="bg-white py-8">
         <div className="flex items-center justify-between">
-          {" "}
           <div className="flex items-center gap-3">
             <div>
               <svg
@@ -25,7 +26,7 @@ export default function Footer() {
                   height="45.931"
                   rx="22.9655"
                   stroke="#687AF6"
-                  stroke-width="2.06897"
+                  strokeWidth="2.06897"
                 />
                 <path
                   d="M23.3828 19.3297C23.3828 19.3297 31.892 17.9668 33.6063 25.3921C35.3206 32.8175 27.0751 35.3228 27.0751 35.3228L23.3828 19.3297Z"
@@ -47,11 +48,12 @@ export default function Footer() {
               </Text>
             </div>
           </div>
-          <button className="bg-bluescale-100 text-white font-semibold px-6 py-4 cursor-pointerer">
+          <button className="bg-bluescale-100 text-white font-semibold px-6 py-4 cursor-pointer">
             <Text>Solicitar Suporte</Text>
           </button>
         </div>
       </Section>
+
       <div className="bg-bluescale-100 text-center py-6">
         <Text className="text-white">
           ©2025 Todos os direitos reservados{" "}

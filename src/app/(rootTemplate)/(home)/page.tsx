@@ -1,4 +1,4 @@
-import HomeTemplate from "@/components/templates/Home";
+import HomeTemplate from "@/components/templates/Site/Home";
 import { getPageHome } from "@/lib/getPageHome";
 
 export default async function HomePage() {

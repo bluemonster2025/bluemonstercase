@@ -1,18 +1,21 @@
-"use client";
-
+import { AuthProvider } from "@/context/AuthContext";
 import { ReactNode } from "react";
-import Footer from "./ui/Footer";
+import { SiteSettings } from "@/types/siteSettings";
+import { getSiteSettings } from "@/lib/siteSettings";
+import EcommerceAdminLayoutClient from "./ui/EcommerceAdminLayoutClient";
 
-interface AdminLayoutProps {
+interface Props {
   children: ReactNode;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default async function AdminLayout({ children }: Props) {
+  const settings: SiteSettings | null = await getSiteSettings();
+
   return (
-    <div className="relative overflow-x-hidden">
-      {/* <Header logo={logo} /> */}
-      {children}
-      <Footer />
-    </div>
+    <AuthProvider>
+      <EcommerceAdminLayoutClient logo={settings?.logo}>
+        {children}
+      </EcommerceAdminLayoutClient>
+    </AuthProvider>
   );
 }

@@ -1,6 +1,6 @@
 export type Banner = {
-  desktop?: { src: string; alt: string };
-  mobile?: { src: string; alt: string };
+  desktop?: { databaseId?: number; src: string; alt: string };
+  mobile?: { databaseId?: number; src: string; alt: string };
 };
 
 export type SessaoProduct = {
@@ -30,26 +30,25 @@ export type Sessao4 = {
 };
 
 export type RawHome = {
-  id: string;
+  databaseId: number;
   slug: string;
   title: string;
   homeHero?: {
-    heroImage?: { node: { sourceUrl: string; altText: string | null } } | null;
+    heroImage?: {
+      node: { id: number; sourceUrl: string; altText: string | null };
+    } | null;
     heroImageMobile?: {
-      node: { sourceUrl: string; altText: string | null };
+      node: { id: number; sourceUrl: string; altText: string | null };
     } | null;
   } | null;
-
   homeSessao2?: {
     titleSessao2?: string | null;
     featuredProducts2?: { nodes: SessaoProduct[] } | null;
   } | null;
-
   homeSessao3?: {
     titleSessao3?: string | null;
     featuredProducts3?: { nodes: SessaoProduct[] } | null;
   } | null;
-
   homeSessao4?: {
     imageSessao4?: {
       node: { sourceUrl: string; altText: string | null };
@@ -58,21 +57,17 @@ export type RawHome = {
     textSessao4?: string | null;
     linkButtonSessao4?: string | null;
   } | null;
-
   homeSessao5?: {
-    titleSessao5?: string | null;
     featuredProducts5?: { nodes: SessaoProduct[] } | null;
   } | null;
-
   homeBanner?: {
     homeBannerDesktop?: {
-      node: { sourceUrl: string; altText: string | null };
+      node: { id: number; sourceUrl: string; altText: string | null };
     } | null;
     homeBannerMobile?: {
-      node: { sourceUrl: string; altText: string | null };
+      node: { id: number; sourceUrl: string; altText: string | null };
     } | null;
   } | null;
-
   homeSessao7?: {
     titleSessao7?: string | null;
     featuredProducts7?: { nodes: SessaoProduct[] } | null;
@@ -80,7 +75,7 @@ export type RawHome = {
 };
 
 export type PageHome = {
-  id: string;
+  databaseId: number;
   slug: string;
   title: string;
   hero?: Banner;

@@ -1,4 +1,4 @@
-import CategoriaTemplate from "@/components/templates/Categroy";
+import CategoriaTemplate from "@/components/templates/Site/Categroy";
 import { getCategoryBySlug } from "@/lib/categories";
 import { notFound } from "next/navigation";
 

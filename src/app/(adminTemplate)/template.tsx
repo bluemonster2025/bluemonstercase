@@ -1,4 +1,4 @@
-import EcommerceLayout from "@/components/layouts/EcommerceLayout";
+import AdminLayout from "@/components/layouts/AdminLayout";
 import { ReactNode } from "react";
 
 type AdminTemplateProps = {
@@ -6,5 +6,5 @@ type AdminTemplateProps = {
 };
 
 export default function AdminTemplate({ children }: AdminTemplateProps) {
-  return <EcommerceLayout>{children}</EcommerceLayout>;
+  return <AdminLayout>{children}</AdminLayout>;
 }

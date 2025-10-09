@@ -24,6 +24,34 @@ export function mapHome(raw: RawHome): PageHome {
   const bannerDesktop = raw.homeBanner?.homeBannerDesktop?.node;
   const bannerMobile = raw.homeBanner?.homeBannerMobile?.node;
 
+  const mapNodeToBanner = (
+    desktopNode?: {
+      databaseId?: number;
+      sourceUrl: string;
+      altText: string | null;
+    },
+    mobileNode?: {
+      databaseId?: number;
+      sourceUrl: string;
+      altText: string | null;
+    }
+  ): Banner => ({
+    desktop: desktopNode
+      ? {
+          databaseId: desktopNode.databaseId,
+          src: desktopNode.sourceUrl,
+          alt: desktopNode.altText || "",
+        }
+      : { src: "", alt: "" }, // garante estrutura correta
+    mobile: mobileNode
+      ? {
+          databaseId: mobileNode.databaseId,
+          src: mobileNode.sourceUrl,
+          alt: mobileNode.altText || "",
+        }
+      : { src: "", alt: "" },
+  });
+
   const sessao2 = mapRawSession({
     title: raw.homeSessao2?.titleSessao2 || undefined,
     featuredProducts: raw.homeSessao2?.featuredProducts2 || undefined,
@@ -48,30 +76,15 @@ export function mapHome(raw: RawHome): PageHome {
     featuredProducts: raw.homeSessao5?.featuredProducts5 || undefined,
   });
 
-  const mapNodeToBanner = (
-    desktopNode?: { sourceUrl: string; altText: string | null },
-    mobileNode?: { sourceUrl: string; altText: string | null }
-  ): Banner | undefined => {
-    if (!desktopNode && !mobileNode) return undefined;
-    return {
-      desktop: desktopNode
-        ? { src: desktopNode.sourceUrl, alt: desktopNode.altText || "" }
-        : undefined,
-      mobile: mobileNode
-        ? { src: mobileNode.sourceUrl, alt: mobileNode.altText || "" }
-        : undefined,
-    };
-  };
-
   const sessao7 = mapRawSession({
     title: raw.homeSessao7?.titleSessao7 || undefined,
     featuredProducts: raw.homeSessao7?.featuredProducts7 || undefined,
   });
 
   return {
-    id: raw.id,
-    slug: raw.slug,
-    title: raw.title,
+    databaseId: raw.databaseId,
+    slug: raw.slug || "home",
+    title: raw.title || "home",
     hero: mapNodeToBanner(heroDesktop, heroMobile),
     sessao2,
     sessao3,
