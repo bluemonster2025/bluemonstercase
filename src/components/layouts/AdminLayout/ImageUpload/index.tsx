@@ -33,7 +33,7 @@ export default function ImageUpload({
   return (
     <div className={`mb-4 ${containerClass}`}>
       <div
-        className={`relative w-full ${aspectClass} bg-gray-100 ${rounded} overflow-hidden mb-2`}
+        className={`relative w-full bg-no-repeat ${aspectClass} bg-gray-100 ${rounded} overflow-hidden mb-2`}
         style={{ backgroundImage: image ? `url(${image})` : undefined }}
       >
         {!image && (

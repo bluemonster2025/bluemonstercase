@@ -23,7 +23,7 @@ export type ProductSession = {
 };
 
 export type Sessao4 = {
-  image?: { src: string; alt: string };
+  image?: { src: string; alt: string; databaseId?: number };
   title?: string;
   text?: string;
   linkButton?: string;
