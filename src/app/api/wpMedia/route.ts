@@ -5,20 +5,10 @@ import { cookies } from "next/headers";
 
 const WP_URL = process.env.WOO_SITE_URL!;
 
-// Tipos GraphQL
-interface GraphQLErrorItem {
-  message: string;
-  locations?: { line: number; column: number }[];
-  path?: string[];
-  extensions?: Record<string, unknown>;
-}
-
-interface GraphQLResponse<T = unknown> {
-  data?: T;
-  errors?: GraphQLErrorItem[];
-}
-
-interface MediaItem {
+// ------------------------
+// Tipos
+// ------------------------
+export interface MediaItem {
   databaseId: number;
   sourceUrl: string;
   altText: string;
@@ -31,15 +21,68 @@ interface MediaItemsResponse {
   };
 }
 
-// GET: buscar mídias
-export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+interface GraphQLErrorItem {
+  message: string;
+}
 
-  if (!token) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+interface GraphQLResponse<T = unknown> {
+  data?: T;
+  errors?: GraphQLErrorItem[];
+}
+
+// ------------------------
+// Função para refresh do token
+// ------------------------
+async function refreshToken(): Promise<void> {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/refresh`, {
+    method: "POST",
+  });
+}
+
+// ------------------------
+// Função fetch com token e retry
+// ------------------------
+async function fetchWithToken<T>(query: string): Promise<GraphQLResponse<T>> {
+  const cookieStore = await cookies();
+  let token = cookieStore.get("token")?.value;
+
+  if (!token) throw new Error("Não autenticado");
+
+  const res = await fetch(`${WP_URL}/graphql`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  const result: GraphQLResponse<T> = await res.json();
+
+  // Se token expirou → refresh e retry
+  if (result.errors?.some((e) => e.message.includes("Expired token"))) {
+    await refreshToken();
+    token = (await cookies()).get("token")?.value;
+
+    const retryRes = await fetch(`${WP_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    return await retryRes.json();
   }
 
+  return result;
+}
+
+// ------------------------
+// GET → buscar mídias
+// ------------------------
+export async function GET() {
   const query = `
     query MediaItems {
       mediaItems(first: 100) {
@@ -54,88 +97,91 @@ export async function GET() {
   `;
 
   try {
-    const res = await fetch(`${WP_URL}/graphql`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ query }),
-    });
+    const result = await fetchWithToken<MediaItemsResponse>(query);
 
-    const result: GraphQLResponse<MediaItemsResponse> = await res.json();
-
-    if (!res.ok || result.errors?.length) {
+    if (result.errors?.length) {
       return NextResponse.json(
-        {
-          error:
-            result.errors?.map((e) => e.message).join(", ") ||
-            "Erro ao buscar mídia",
-        },
+        { error: result.errors.map((e) => e.message).join(", ") },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(result.data?.mediaItems?.nodes || []);
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Erro interno" },
-      { status: 500 }
-    );
+    return NextResponse.json(result.data?.mediaItems.nodes || []);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro interno";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// ========================
+// ------------------------
 // POST → upload de mídia
-// ========================
+// ------------------------
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+    let token = cookieStore.get("token")?.value;
 
-    if (!token) {
+    if (!token)
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
 
     const formData = await req.formData();
-    const file = formData.get("file") as Blob;
+    const file = formData.get("file") as Blob | null;
 
-    if (!file) {
+    if (!file)
       return NextResponse.json(
         { error: "Arquivo não enviado" },
         { status: 400 }
       );
-    }
 
     const wpForm = new FormData();
     wpForm.append("file", file, (file as File).name);
 
-    // Upload server-side para o WordPress
     const res = await fetch(`${WP_URL}/wp-json/wp/v2/media`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // mesmo token do cookie
+        Authorization: `Bearer ${token}`,
       },
       body: wpForm,
     });
 
-    const data = await res.json();
+    // Token expirou → refresh e retry
+    if (res.status === 401) {
+      await refreshToken();
+      token = (await cookies()).get("token")?.value;
 
-    if (!res.ok) {
-      return NextResponse.json({ error: data }, { status: res.status });
+      const retryRes = await fetch(`${WP_URL}/wp-json/wp/v2/media`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: wpForm,
+      });
+
+      const retryData = await retryRes.json();
+      if (!retryRes.ok)
+        return NextResponse.json(
+          { error: retryData },
+          { status: retryRes.status }
+        );
+
+      return NextResponse.json({
+        databaseId: retryData.id,
+        sourceUrl: retryData.source_url,
+        altText: retryData.alt_text,
+        title: retryData.title.rendered,
+      });
     }
 
-    // Retorna a mídia criada
+    const data = await res.json();
+    if (!res.ok)
+      return NextResponse.json({ error: data }, { status: res.status });
+
     return NextResponse.json({
       databaseId: data.id,
       sourceUrl: data.source_url,
       altText: data.alt_text,
       title: data.title.rendered,
     });
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Erro interno" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro interno";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

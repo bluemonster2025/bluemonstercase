@@ -30,13 +30,13 @@ export default function Header({ logo }: Props) {
   return (
     <header className="w-full">
       {/* Topo do Header */}
-      <Section className="flex items-center py-4">
+      <Section className="flex items-center max-h-[70px]">
         {user ? (
           <div className="flex justify-between w-full items-center">
             <Logo logo={logo} />
             <button
               onClick={handleLogout}
-              className="cursor-pointer px-6 py-2 bg-white border border-grayscale-100 text-grayscale-450 rounded text-sm font-semibold"
+              className="cursor-pointer px-6 py-2 bg-white border border-grayscale-100 text-grayscale-450 rounded text-sm font-semibold hover:bg-black hover:text-white"
             >
               Sair
             </button>

@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Section } from "@/components/elements/Section";
-import { Text, Title } from "@/components/elements/Texts";
 import ImageUpload from "../ImageUpload";
+import InputField from "@/components/elements/InputField";
+import { ButtonPrimary } from "@/components/elements/Button";
+import { EditorSwing } from "../EditorSwing";
 
 interface FeaturedFrameData {
   image?: { src: string; alt?: string; databaseId?: number };
@@ -22,62 +25,72 @@ export default function FeaturedFrameEditor({
   linkButton,
   onChange,
 }: FeaturedFrameEditorProps) {
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+
   return (
     <Section>
-      <Title as="h3" className="text-2xl font-bold mb-6">
-        Sessão 4 - Destaque
-      </Title>
+      <div className="flex flex-col md:flex-row items-center gap-1 md:gap-12">
+        {/* Imagem */}
+        <div className="flex-1 relative w-full max-w-[385px] aspect-[0.78/1] md:aspect-[0.88/1]">
+          <ImageUpload
+            label="Substituir banner"
+            initialImage={image?.src || ""}
+            aspectClass="aspect-[0.88/1]"
+            containerClass="max-w-[385px]"
+            rounded="rounded-3xl"
+            dimensions="A imagem deve ter o tamanho de 385px / 435px"
+            onChange={(url, id) => {
+              onChange?.({
+                image: { src: url, alt: image?.alt || "", databaseId: id },
+                title,
+                text,
+                linkButton,
+              });
+            }}
+          />
+        </div>
 
-      {/* Upload da imagem */}
-      <Text className="mb-1 font-medium">Imagem</Text>
-      <ImageUpload
-        label="Selecionar imagem"
-        initialImage={image?.src || ""}
-        aspectClass="aspect-[0.78/1]"
-        containerClass="max-w-[385px] mb-8"
-        rounded="rounded-lg"
-        onChange={(url, id) => {
-          onChange?.({
-            image: { src: url, alt: image?.alt || "", databaseId: id },
-            title,
-            text,
-            linkButton,
-          });
-        }}
-      />
+        {/* Título e demais campos */}
+        <div className="flex flex-col w-1/2 gap-4">
+          <div className="w-fit">
+            <ButtonPrimary
+              className="h-6 rounded font-bold"
+              onClick={() => setIsEditingTitle((prev) => !prev)}
+            >
+              {isEditingTitle ? "Concluir edição" : "Editar título"}
+            </ButtonPrimary>
+          </div>
 
-      {/* Título */}
-      <Text className="font-medium mb-1">Título</Text>
-      <input
-        placeholder="Digite o título..."
-        value={title || ""}
-        onChange={(e) =>
-          onChange?.({ image, title: e.target.value, text, linkButton })
-        }
-        className="mb-6"
-      />
+          <InputField
+            className="text-3xl font-bold bg-white"
+            placeholder="Digite o título..."
+            value={title}
+            disabled={!isEditingTitle}
+            onChange={(val) =>
+              onChange?.({ image, title: val, text, linkButton })
+            }
+          />
 
-      {/* Texto */}
-      <Text className="font-medium mb-1">Texto</Text>
-      <textarea
-        placeholder="Digite o texto (aceita HTML opcional)..."
-        value={text || ""}
-        onChange={(e) =>
-          onChange?.({ image, title, text: e.target.value, linkButton })
-        }
-        className="mb-6 min-h-[120px]"
-      />
+          {/* Texto */}
+          <EditorSwing
+            value={text}
+            maxLength={350}
+            onChange={(val) =>
+              onChange?.({ image, title, text: val, linkButton })
+            }
+          />
 
-      {/* Link do botão */}
-      <Text className="font-medium mb-1">Link do botão</Text>
-      <input
-        placeholder="Digite o link do botão..."
-        value={linkButton || ""}
-        onChange={(e) =>
-          onChange?.({ image, title, text, linkButton: e.target.value })
-        }
-        className="mb-6"
-      />
+          {/* Link do botão */}
+          <InputField
+            label="Saiba mais (link)"
+            placeholder="Digite o link do botão..."
+            value={linkButton}
+            onChange={(val) =>
+              onChange?.({ image, title, text, linkButton: val })
+            }
+          />
+        </div>
+      </div>
     </Section>
   );
 }

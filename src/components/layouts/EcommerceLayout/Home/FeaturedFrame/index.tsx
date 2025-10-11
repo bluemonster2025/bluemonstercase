@@ -39,7 +39,7 @@ export default function FeaturedFrame({
           )}
 
           <div
-            className="text-gray-700 mb-10 md:mb-6"
+            className="text-black mb-10 md:mb-6"
             dangerouslySetInnerHTML={{ __html: text }}
           />
 

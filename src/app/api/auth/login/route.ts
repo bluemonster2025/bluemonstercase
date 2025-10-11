@@ -1,39 +1,33 @@
+"use server";
+
 import { NextResponse } from "next/server";
 import { getGraphQLClient } from "@/lib/graphql";
 import { ClientError } from "graphql-request";
 
 const LOGIN_MUTATION = `
-  mutation Login($username: String!, $password: String!) {
-    login(input: { clientMutationId: "login", username: $username, password: $password }) {
-      authToken
-      user {
-        id
-        name
-        email
-      }
+mutation Login($username: String!, $password: String!) {
+  login(input: { clientMutationId: "login", username: $username, password: $password }) {
+    authToken
+    refreshToken
+    user {
+      id
+      name
+      email
     }
   }
+}
 `;
 
 interface LoginResponse {
   login: {
     authToken: string;
+    refreshToken: string;
     user: {
       id: string;
       name: string;
       email: string;
     };
   };
-}
-
-// 🔹 Decodifica entidades HTML (&lt;strong&gt; -> <strong>)
-function decodeHTMLEntities(str: string): string {
-  return str
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
 }
 
 export async function POST(req: Request) {
@@ -53,38 +47,34 @@ export async function POST(req: Request) {
       password,
     });
 
-    const token = data.login.authToken;
+    const { authToken, refreshToken, user } = data.login;
 
-    const response = NextResponse.json({
-      success: true,
-      user: data.login.user,
-    });
+    const response = NextResponse.json({ success: true, user });
 
-    response.cookies.set("token", token, {
+    // Token de acesso: expira em 30 minutos
+    response.cookies.set("token", authToken, {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 dias
+      maxAge: 60 * 30, // 30 minutos
+    });
+
+    // Refresh token: expira em 7 dias
+    response.cookies.set("refreshToken", refreshToken, {
+      httpOnly: true,
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
   } catch (err) {
     let errorMessage = "Usuário ou senha inválidos!";
-
     if (err instanceof ClientError && err.response?.errors?.length) {
-      // 1️⃣ Decodifica entidades HTML (&lt;strong&gt;)
-      let decoded = decodeHTMLEntities(err.response.errors[0].message);
-
-      // 2️⃣ Remove tags HTML (<strong>)
-      decoded = decoded.replace(/<[^>]+>/g, "").trim();
-
-      // 3️⃣ Remove prefixos desnecessários (ex: "ERRO:", "Erro:")
-      decoded = decoded.replace(/^(ERRO:|Erro:)\s*/i, "");
-
-      errorMessage = decoded;
+      errorMessage = err.response.errors[0].message;
     }
-
     return NextResponse.json({ error: errorMessage }, { status: 401 });
   }
 }

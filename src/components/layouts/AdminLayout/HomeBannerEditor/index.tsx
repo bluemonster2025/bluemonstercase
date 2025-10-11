@@ -1,7 +1,6 @@
 "use client";
 
 import { Section } from "@/components/elements/Section";
-import { Text } from "@/components/elements/Texts";
 import ImageUpload from "../ImageUpload";
 
 interface HomeBannerProps {
@@ -21,12 +20,12 @@ export default function HomeBannerEditor({
   return (
     <Section>
       {/* Home Banner Desktop */}
-      <Text className="mb-1 font-medium">Home Banner Desktop</Text>
       <ImageUpload
-        label="Selecionar banner desktop"
+        label="Substituir Banner desktop"
         initialImage={desktop?.src || ""}
         aspectClass="aspect-[3.51/1]"
         rounded="md:rounded-3xl"
+        dimensions="A imagem deve ter o tamanho de 1144px / 327px"
         onChange={(url, id) => {
           onChange?.({
             desktop: { src: url, alt: desktop?.alt || "", databaseId: id },
@@ -36,13 +35,13 @@ export default function HomeBannerEditor({
       />
 
       {/* Home Banner Mobile */}
-      <Text className="font-semibold mb-2">Home Banner Mobile</Text>
       <ImageUpload
-        label="Selecionar banner mobile"
+        label="Substituir Banner mobile"
         initialImage={mobile?.src || ""}
-        aspectClass="aspect-square"
+        aspectClass="aspect-[1.44/1]"
         containerClass="mb-12 max-w-[342px]"
         rounded="rounded-0"
+        dimensions="A imagem deve ter o tamanho de 390px / 270px"
         onChange={(url, id) => {
           onChange?.({
             desktop,
