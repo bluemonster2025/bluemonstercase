@@ -114,7 +114,7 @@ export function mapProduct(raw: RawProduct): Product {
       id: p.id,
       name: p.name,
       price: p.price ?? "0",
-      slug: p.slug || p.id,
+      slug: p.slug,
       image: p.image
         ? { sourceUrl: p.image.sourceUrl, altText: p.image.altText || p.name }
         : undefined,

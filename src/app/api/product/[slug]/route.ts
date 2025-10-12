@@ -67,18 +67,18 @@ export async function GET(
         }
         crossSell {
           nodes {
-            ... on SimpleProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on VariableProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on ExternalProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on GroupProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on SimpleProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on VariableProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on ExternalProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on GroupProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
           }
         }
         upsell {
           nodes {
-            ... on SimpleProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on VariableProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on ExternalProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on GroupProduct { id name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on SimpleProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on VariableProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on ExternalProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
+            ... on GroupProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
           }
         }
       }
