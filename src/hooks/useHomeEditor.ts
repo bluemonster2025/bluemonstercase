@@ -41,7 +41,7 @@ export function useHomeEditor(initialPage: PageHome) {
     }));
 
   const handleSessaoChange = (
-    key: SessaoKeys,
+    key: "sessao2" | "sessao3" | "sessao5" | "sessao7",
     data: Partial<ProductSession>
   ) => {
     setPageState((prev) => ({
@@ -51,8 +51,8 @@ export function useHomeEditor(initialPage: PageHome) {
         featuredProducts: data.featuredProducts
           ? data.featuredProducts.map((p, i) => ({
               ...prev[key]?.featuredProducts?.[i],
-              ...p,
-              id: prev[key]?.featuredProducts?.[i]?.id || p.id || "", // ⚠️ ID nunca muda
+              ...p, // mantém ID e featuredImage
+              id: prev[key]?.featuredProducts?.[i]?.id || p.id || "", // ⚠️ mantém ID original
               visible:
                 p.visible ?? prev[key]?.featuredProducts?.[i]?.visible ?? true,
             }))
