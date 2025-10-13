@@ -30,7 +30,7 @@ export function useHomeEditor(initialPage: PageHome) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Handlers
+  // 🔹 Handlers básicos
   const handleHeroChange = (hero: Banner) =>
     setPageState((prev) => ({ ...prev, hero: { ...prev.hero, ...hero } }));
 
@@ -47,16 +47,10 @@ export function useHomeEditor(initialPage: PageHome) {
     setPageState((prev) => ({
       ...prev,
       [key]: {
+        ...prev[key],
         title: data.title ?? prev[key]?.title ?? "",
-        featuredProducts: data.featuredProducts
-          ? data.featuredProducts.map((p, i) => ({
-              ...prev[key]?.featuredProducts?.[i],
-              ...p, // mantém ID e featuredImage
-              id: prev[key]?.featuredProducts?.[i]?.id || p.id || "", // ⚠️ mantém ID original
-              visible:
-                p.visible ?? prev[key]?.featuredProducts?.[i]?.visible ?? true,
-            }))
-          : prev[key]?.featuredProducts ?? [],
+        featuredProducts:
+          data.featuredProducts ?? prev[key]?.featuredProducts ?? [],
       },
     }));
   };
@@ -90,7 +84,6 @@ export function useHomeEditor(initialPage: PageHome) {
       visible: p.visible ?? true,
     }));
 
-  // 🔹 Monta objeto de tags para envio
   const buildFeaturedTags = (products?: ProductSession["featuredProducts"]) => {
     const tags: Record<string, string> = {};
     products?.forEach((p) => {
@@ -99,7 +92,6 @@ export function useHomeEditor(initialPage: PageHome) {
     return JSON.stringify(tags);
   };
 
-  // 🔹 Monta objeto de visibleTag para envio
   const buildVisibleTags = (products?: ProductSession["featuredProducts"]) => {
     const visibles: Record<string, boolean> = {};
     products?.forEach((p) => {
@@ -108,6 +100,7 @@ export function useHomeEditor(initialPage: PageHome) {
     return JSON.stringify(visibles);
   };
 
+  // 🔹 Salvar
   const handleSave = async () => {
     if (!pageState.databaseId) {
       setError("Database ID não definido!");
