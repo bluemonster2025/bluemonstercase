@@ -16,14 +16,14 @@ export function useHomeEditor(initialPage: PageHome) {
     },
     sessao2: initialPage.sessao2 || { title: "", featuredProducts: [] },
     sessao3: initialPage.sessao3 || { title: "", featuredProducts: [] },
-    sessao5: initialPage.sessao5 || { title: "", featuredProducts: [] },
-    sessao7: initialPage.sessao7 || { title: "", featuredProducts: [] },
     sessao4: initialPage.sessao4 || {
       image: { src: "", alt: "", databaseId: undefined },
       title: "",
       text: "",
       linkButton: "",
     },
+    sessao5: initialPage.sessao5 || { title: "", featuredProducts: [] },
+    sessao7: initialPage.sessao7 || { title: "", featuredProducts: [] },
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -31,28 +31,32 @@ export function useHomeEditor(initialPage: PageHome) {
   const [error, setError] = useState<string | null>(null);
 
   // 🔹 Handlers
-  const handleHeroChange = (hero: Banner) => {
+  const handleHeroChange = (hero: Banner) =>
     setPageState((prev) => ({ ...prev, hero: { ...prev.hero, ...hero } }));
-  };
 
-  const handleBannerChange = (banner: Banner) => {
+  const handleBannerChange = (banner: Banner) =>
     setPageState((prev) => ({
       ...prev,
       banner: { ...prev.banner, ...banner },
     }));
-  };
 
-  // 🔹 Mantém produtos existentes se não houver atualização
   const handleSessaoChange = (
-    key: "sessao2" | "sessao3" | "sessao5" | "sessao7",
+    key: SessaoKeys,
     data: Partial<ProductSession>
   ) => {
     setPageState((prev) => ({
       ...prev,
       [key]: {
         title: data.title ?? prev[key]?.title ?? "",
-        featuredProducts:
-          data.featuredProducts ?? prev[key]?.featuredProducts ?? [],
+        featuredProducts: data.featuredProducts
+          ? data.featuredProducts.map((p, i) => ({
+              ...prev[key]?.featuredProducts?.[i],
+              ...p,
+              id: prev[key]?.featuredProducts?.[i]?.id || p.id || "", // ⚠️ ID nunca muda
+              visible:
+                p.visible ?? prev[key]?.featuredProducts?.[i]?.visible ?? true,
+            }))
+          : prev[key]?.featuredProducts ?? [],
       },
     }));
   };
@@ -74,7 +78,6 @@ export function useHomeEditor(initialPage: PageHome) {
     }));
   };
 
-  // 🔹 Padroniza produtos antes de salvar (agora inclui tags)
   const sanitizeProducts = (
     products: ProductSession["featuredProducts"] = []
   ) =>
@@ -83,10 +86,28 @@ export function useHomeEditor(initialPage: PageHome) {
       title: p.title || "",
       price: p.price || "",
       featuredImage: p.featuredImage || undefined,
-      tags: p.productTags?.nodes?.map((t) => t.name) || [], // ✅ inclui tags de forma segura
+      customTag: p.customTag || "",
+      visible: p.visible ?? true,
     }));
 
-  // 🔹 Salvar página
+  // 🔹 Monta objeto de tags para envio
+  const buildFeaturedTags = (products?: ProductSession["featuredProducts"]) => {
+    const tags: Record<string, string> = {};
+    products?.forEach((p) => {
+      if (p.customTag) tags[p.id] = p.customTag;
+    });
+    return JSON.stringify(tags);
+  };
+
+  // 🔹 Monta objeto de visibleTag para envio
+  const buildVisibleTags = (products?: ProductSession["featuredProducts"]) => {
+    const visibles: Record<string, boolean> = {};
+    products?.forEach((p) => {
+      visibles[p.id] = p.visible ?? true;
+    });
+    return JSON.stringify(visibles);
+  };
+
   const handleSave = async () => {
     if (!pageState.databaseId) {
       setError("Database ID não definido!");
@@ -112,24 +133,20 @@ export function useHomeEditor(initialPage: PageHome) {
           featured_products_2: sanitizeProducts(
             pageState.sessao2?.featuredProducts
           ),
+          featured_tags_2: buildFeaturedTags(
+            pageState.sessao2?.featuredProducts
+          ),
+          visible_tag: buildVisibleTags(pageState.sessao2?.featuredProducts),
         },
         homeSessao3: {
           title_sessao3: pageState.sessao3?.title || "",
           featured_products_3: sanitizeProducts(
             pageState.sessao3?.featuredProducts
           ),
-        },
-        homeSessao5: {
-          title_sessao5: pageState.sessao5?.title || "",
-          featured_products_5: sanitizeProducts(
-            pageState.sessao5?.featuredProducts
+          featured_tags_3: buildFeaturedTags(
+            pageState.sessao3?.featuredProducts
           ),
-        },
-        homeSessao7: {
-          title_sessao7: pageState.sessao7?.title || "",
-          featured_products_7: sanitizeProducts(
-            pageState.sessao7?.featuredProducts
-          ),
+          visible_tag: buildVisibleTags(pageState.sessao3?.featuredProducts),
         },
         homeSessao4: {
           image_sessao4: pageState.sessao4?.image?.databaseId,
@@ -137,10 +154,28 @@ export function useHomeEditor(initialPage: PageHome) {
           text_sessao4: pageState.sessao4?.text || "",
           link_button_sessao4: pageState.sessao4?.linkButton || "",
         },
+        homeSessao5: {
+          title_sessao5: pageState.sessao5?.title || "",
+          featured_products_5: sanitizeProducts(
+            pageState.sessao5?.featuredProducts
+          ),
+          featured_tags_5: buildFeaturedTags(
+            pageState.sessao5?.featuredProducts
+          ),
+          visible_tag: buildVisibleTags(pageState.sessao5?.featuredProducts),
+        },
+        homeSessao7: {
+          title_sessao7: pageState.sessao7?.title || "",
+          featured_products_7: sanitizeProducts(
+            pageState.sessao7?.featuredProducts
+          ),
+          featured_tags_7: buildFeaturedTags(
+            pageState.sessao7?.featuredProducts
+          ),
+          visible_tag: buildVisibleTags(pageState.sessao7?.featuredProducts),
+        },
       },
     };
-
-    console.log("[DBG:SAVE] bodyData ready:", structuredClone(bodyData));
 
     try {
       const res = await fetch("/api/pageHome", {

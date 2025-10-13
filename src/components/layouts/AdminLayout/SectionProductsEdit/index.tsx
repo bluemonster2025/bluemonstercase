@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Title, Text } from "@/components/elements/Texts";
 import { Skeleton } from "@/components/elements/Skeleton";
@@ -14,16 +14,16 @@ import { parsePrice } from "@/utils/parsePrice";
 type SectionProductsEditProps = {
   products: RelatedProductNode[];
   title: string;
+  visibleTagsJson?: string; // JSON com visíveis
   onUpdate: (index: number, newProduct: RelatedProductNode) => void;
-  onTagChange: (index: number, checked: boolean) => void;
   onTitleChange?: (newTitle: string) => void;
 };
 
 export default function SectionProductsEdit({
   products,
   title,
+  visibleTagsJson,
   onUpdate,
-  onTagChange,
   onTitleChange,
 }: SectionProductsEditProps) {
   const { products: allProducts, loading } = useProducts();
@@ -31,13 +31,43 @@ export default function SectionProductsEdit({
   const [searchQuery, setSearchQuery] = useState("");
   const [localTitle, setLocalTitle] = useState(title);
 
-  const skeletonCount = 4;
-  const displayedProducts = products.slice(0, 4);
+  // Parse das tags visíveis
+  const parsedVisibleTags: Record<string, boolean> = useMemo(() => {
+    if (!visibleTagsJson) return {};
+    try {
+      const obj = JSON.parse(visibleTagsJson);
+      return Object.fromEntries(
+        Object.entries(obj).map(([id, val]) => [id, val === "true"])
+      );
+    } catch {
+      return {};
+    }
+  }, [visibleTagsJson]);
 
+  // Estado local dos produtos
+  const [localProducts, setLocalProducts] = useState<RelatedProductNode[]>(
+    products.map((p) => ({
+      ...p,
+      customTag: p.customTag || "",
+      visible: parsedVisibleTags[p.id] ?? p.visible ?? true,
+    }))
+  );
+
+  // Atualiza título local se mudar do pai
+  useEffect(() => setLocalTitle(title), [title]);
+
+  // Atualiza produtos locais se mudar do pai
   useEffect(() => {
-    setLocalTitle(title);
-  }, [title]);
+    setLocalProducts(
+      products.map((p) => ({
+        ...p,
+        customTag: p.customTag || "",
+        visible: parsedVisibleTags[p.id] ?? p.visible ?? true,
+      }))
+    );
+  }, [products, parsedVisibleTags]);
 
+  // Filtra produtos para o modal
   const filteredProducts = useMemo(() => {
     if (!searchQuery) return allProducts;
     return allProducts.filter((prod) =>
@@ -45,9 +75,19 @@ export default function SectionProductsEdit({
     );
   }, [allProducts, searchQuery]);
 
+  // Atualiza estado local + avisa pai
+  const handleLocalChange = (
+    index: number,
+    updated: Partial<RelatedProductNode>
+  ) => {
+    const newProducts = [...localProducts];
+    newProducts[index] = { ...newProducts[index], ...updated };
+    setLocalProducts(newProducts);
+    onUpdate(index, newProducts[index]);
+  };
+
   return (
     <Section>
-      {/* Título editável */}
       <input
         type="text"
         value={localTitle}
@@ -60,8 +100,8 @@ export default function SectionProductsEdit({
       />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {displayedProducts.length === 0
-          ? [...Array(skeletonCount)].map((_, i) => (
+        {localProducts.length === 0
+          ? [...Array(4)].map((_, i) => (
               <div key={i} className="flex flex-col h-full">
                 <Skeleton className="w-full h-48 rounded-lg" />
                 <div className="p-4 flex-1 flex flex-col gap-2">
@@ -71,16 +111,13 @@ export default function SectionProductsEdit({
                 </div>
               </div>
             ))
-          : displayedProducts.map((item, index) => {
+          : localProducts.map((item, index) => {
               const productImage =
                 item?.image?.sourceUrl || "/images/placeholder.png";
-              const tags = item.tags || []; // ✅ garante array
-              const hasTag = tags.length > 0;
 
               return (
                 <div
-                  key={item?.id || index}
-                  data-idx={index}
+                  key={item.id || index}
                   className="flex flex-col h-full border border-grayscale-200 rounded-lg overflow-hidden"
                 >
                   <div className="relative w-full aspect-[2/1]">
@@ -116,23 +153,36 @@ export default function SectionProductsEdit({
                       )}
                     </Text>
 
-                    {/* Checkbox para exibir tag */}
-                    {hasTag && (
-                      <label className="mt-2 flex items-center gap-2 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={tags.length > 0}
-                          onChange={(e) => onTagChange(index, e.target.checked)}
-                        />
-                        {tags[0]}
-                      </label>
-                    )}
+                    {/* ✨ TAG */}
+                    <input
+                      type="text"
+                      value={item.customTag || ""}
+                      onChange={(e) =>
+                        handleLocalChange(index, { customTag: e.target.value })
+                      }
+                      className="border p-1 rounded text-sm mt-2"
+                      placeholder="Tag personalizada"
+                    />
+
+                    {/* ✨ Checkbox Visível */}
+                    <label className="flex items-center gap-2 text-sm mt-2">
+                      <input
+                        type="checkbox"
+                        checked={!!item.visible} // boolean correto
+                        onChange={(e) =>
+                          handleLocalChange(index, {
+                            visible: e.target.checked,
+                          })
+                        }
+                      />
+                      Visível na Home
+                    </label>
 
                     <ButtonPrimary
                       className="mt-auto text-sm h-10"
                       onClick={() => setSelectedIndex(index)}
                     >
-                      Editar produto
+                      Trocar produto
                     </ButtonPrimary>
 
                     {/* Dialog para trocar produto */}
@@ -172,7 +222,12 @@ export default function SectionProductsEdit({
                                   className="w-full text-left p-2 hover:bg-gray-50 transition cursor-pointer"
                                   onClick={() => {
                                     if (selectedIndex !== null) {
-                                      onUpdate(selectedIndex, prod);
+                                      handleLocalChange(index, {
+                                        ...prod,
+                                        customTag:
+                                          localProducts[index].customTag,
+                                        visible: localProducts[index].visible,
+                                      });
                                       setSelectedIndex(null);
                                       setSearchQuery("");
                                     }

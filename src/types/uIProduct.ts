@@ -8,4 +8,6 @@ export type UIProduct = {
   };
   price: string;
   tag?: string;
+  customTag?: string; // ← tag editável pelo front
+  visible?: boolean; // ← checkbox de visibilidade
 };

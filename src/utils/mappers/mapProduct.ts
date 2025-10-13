@@ -119,7 +119,9 @@ export function mapProduct(raw: RawProduct): Product {
         ? { sourceUrl: p.image.sourceUrl, altText: p.image.altText || p.name }
         : undefined,
       type: p.type,
-      tags: p.productTags?.nodes.map((t) => t.name) || [], // ✅ mapeia tags
+      tags: p.productTags?.nodes.map((t) => t.name) || [], // tags existentes
+      customTag: "", // inicializa tag editável
+      visible: true, // inicializa visibilidade como true
     })) || [];
 
   return {

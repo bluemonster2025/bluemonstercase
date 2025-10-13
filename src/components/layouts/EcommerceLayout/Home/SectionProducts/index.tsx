@@ -64,10 +64,10 @@ export default function SectionProducts({
                   <div key={p.id} className="flex flex-col h-full">
                     <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
                       {/* Tags */}
-                      {p.tag && (
+                      {p.customTag && p.visible && (
                         <div className="absolute top-0 right-0 flex gap-1 z-10">
                           <span className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10">
-                            {p.tag}
+                            {p.customTag}
                           </span>
                         </div>
                       )}
@@ -136,10 +136,10 @@ export default function SectionProducts({
                 className="keen-slider__slide flex flex-col h-full pl-1"
               >
                 <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
-                  {p.tag && (
+                  {p.customTag && (
                     <div className="absolute top-0 right-0 flex gap-1 z-10">
                       <span className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10">
-                        {p.tag}
+                        {p.customTag}
                       </span>
                     </div>
                   )}
@@ -182,7 +182,7 @@ export default function SectionProducts({
                   <BuyButton
                     produto={{
                       ...p,
-                      price: p.price ?? "0", // garante string
+                      price: p.price ?? "0",
                     }}
                     title="Comprar"
                   />

@@ -37,6 +37,8 @@ export async function GET() {
         }
         homeSessao2 {
           titleSessao2
+          featuredTags2
+          visibleTag2
           featuredProducts2 {
             nodes {
               ... on Product {
@@ -53,6 +55,8 @@ export async function GET() {
         }
         homeSessao3 {
           titleSessao3
+          featuredTags3
+          visibleTag3
           featuredProducts3 {
             nodes {
               ... on Product {
@@ -74,6 +78,8 @@ export async function GET() {
           linkButtonSessao4
         }
         homeSessao5 {
+          featuredTags5
+          visibleTag5
           featuredProducts5 {
             nodes {
               ... on Product {
@@ -94,6 +100,8 @@ export async function GET() {
         }
         homeSessao7 {
           titleSessao7
+          featuredTags7
+          visibleTag7
           featuredProducts7 {
             nodes {
               ... on Product {

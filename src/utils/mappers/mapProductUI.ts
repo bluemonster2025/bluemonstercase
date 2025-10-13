@@ -11,6 +11,7 @@ export function mapSessionProductToUIProduct(p: SessaoProduct): UIProduct {
       altText: p.featuredImage?.node?.altText || p.title,
     },
     price: p.price ?? "0,00",
-    tag: p.productTags?.nodes?.[0]?.name,
+    customTag: p.customTag || undefined,
+    visible: p.visible ?? true,
   };
 }

@@ -9,7 +9,6 @@ import { SaveModal } from "@/components/layouts/AdminLayout/ui/SaveModal";
 import HomeBannerEditor from "@/components/layouts/AdminLayout/HomeBannerEditor";
 import FeaturedFrameEditor from "@/components/layouts/AdminLayout/FeaturedFrameEditor";
 import { Title } from "@/components/elements/Texts";
-
 import { RelatedProductNode } from "@/types/product";
 import SectionProductsEdit from "@/components/layouts/AdminLayout/SectionProductsEdit";
 
@@ -17,7 +16,55 @@ interface Props {
   page: PageHome;
 }
 
-// 🔹 HomeEditorTemplate.tsx
+type SessaoKeys = "sessao2" | "sessao3" | "sessao5" | "sessao7";
+type VisibleTagKeys =
+  | "visibleTag2"
+  | "visibleTag3"
+  | "visibleTag5"
+  | "visibleTag7";
+
+// 🔹 Função robusta para interpretar qualquer formato vindo do ACF
+function readVisibleMapFromAny(value: unknown): Record<string, boolean> {
+  if (!value) return {};
+
+  if (typeof value === "object" && !Array.isArray(value)) {
+    try {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(([k, v]) => [
+          k,
+          v === true || v === "true",
+        ])
+      );
+    } catch {
+      return {};
+    }
+  }
+
+  if (typeof value === "string") {
+    try {
+      const first = JSON.parse(value);
+      const parsed = typeof first === "string" ? JSON.parse(first) : first;
+
+      if (typeof parsed === "object" && parsed !== null) {
+        return Object.fromEntries(
+          Object.entries(parsed as Record<string, unknown>).map(([k, v]) => [
+            k,
+            v === true || v === "true",
+          ])
+        );
+      }
+
+      return {};
+    } catch {
+      if (value === "true") return { _: true };
+      if (value === "false") return {};
+      return {};
+    }
+  }
+
+  return {};
+}
+
 export default function HomeEditorTemplate({ page }: Props) {
   const {
     pageState,
@@ -33,26 +80,79 @@ export default function HomeEditorTemplate({ page }: Props) {
 
   if (!pageState) return <p>Página não definida</p>;
 
-  const renderSessaoProdutos = (
-    key: "sessao2" | "sessao3" | "sessao5" | "sessao7"
+  // 🔹 Atualiza o campo visibleTagX corretamente
+  const handleVisibleTagUpdate = (
+    key: VisibleTagKeys,
+    newMap: Record<string, boolean>
   ) => {
+    const jsonValue = JSON.stringify(
+      Object.fromEntries(
+        Object.entries(newMap).map(([id, val]) => [id, String(val)])
+      )
+    );
+
+    const sessaoKeyMap: Record<VisibleTagKeys, SessaoKeys> = {
+      visibleTag2: "sessao2",
+      visibleTag3: "sessao3",
+      visibleTag5: "sessao5",
+      visibleTag7: "sessao7",
+    };
+
+    const sessaoKey = sessaoKeyMap[key];
+
+    handleSessaoChange(sessaoKey, {
+      [key]: jsonValue,
+    } as Partial<PageHome>);
+  };
+
+  // 🔹 Renderiza sessões 2, 3, 5 e 7
+  const renderSessaoProdutos = (key: SessaoKeys) => {
     const sessao = pageState[key];
     if (!sessao) return null;
 
-    // Mapear SessaoProduct -> RelatedProductNode
+    const visibleFieldCandidates = [
+      (pageState as Record<string, unknown>)[
+        `visibleTag${key.replace("sessao", "")}`
+      ],
+      (pageState as Record<string, unknown>)[
+        `visible_tag_${key.replace("sessao", "")}`
+      ],
+      (sessao as Record<string, unknown>)["visibleTag"],
+      (sessao as Record<string, unknown>)["visible_tag"],
+    ];
+
+    let visibleMap: Record<string, boolean> = {};
+    for (const cand of visibleFieldCandidates) {
+      if (cand == null) continue;
+      const parsed = readVisibleMapFromAny(cand);
+      if (Object.keys(parsed).length > 0) {
+        visibleMap = parsed;
+        break;
+      }
+    }
+
     const displayProducts: RelatedProductNode[] =
       sessao.featuredProducts?.map((p) => ({
         id: p.id,
         name: p.title || "",
         price: p.price || "",
+        customTag: p.customTag || "",
+        visible:
+          typeof visibleMap[p.id] !== "undefined"
+            ? visibleMap[p.id]
+            : p.visible ?? true,
         image: p.featuredImage?.node
           ? {
               sourceUrl: p.featuredImage.node.sourceUrl,
               altText: p.featuredImage.node.altText || "",
             }
           : undefined,
-        tags: p.productTags?.nodes?.map((t) => t.name) || [], // ✅ Tags da UI
       })) || [];
+
+    const visibleTagFieldKey = `visibleTag${key.replace(
+      "sessao",
+      ""
+    )}` as VisibleTagKeys;
 
     return (
       <SectionProductsEdit
@@ -62,13 +162,13 @@ export default function HomeEditorTemplate({ page }: Props) {
         onUpdate={(index, newProduct) => {
           const sessaoProducts = pageState[key]?.featuredProducts ?? [];
           const updatedProducts = [...sessaoProducts];
-
-          // Atualiza produto mantendo productTags
           updatedProducts[index] = {
             ...updatedProducts[index],
             id: newProduct.id || updatedProducts[index]?.id || "",
             title: newProduct.name,
             price: newProduct.price,
+            customTag: newProduct.customTag || "",
+            visible: newProduct.visible ?? true,
             featuredImage: newProduct.image
               ? {
                   node: {
@@ -77,26 +177,14 @@ export default function HomeEditorTemplate({ page }: Props) {
                   },
                 }
               : updatedProducts[index]?.featuredImage,
-            productTags: {
-              nodes: newProduct.tags?.map((name) => ({ name })) || [],
-            },
           };
 
           handleSessaoChange(key, { featuredProducts: updatedProducts });
-        }}
-        onTagChange={(index, checked) => {
-          const sessaoProducts = pageState[key]?.featuredProducts ?? [];
-          const updatedProducts = [...sessaoProducts];
 
-          if (checked) {
-            // Marca tag padrão "Tag"
-            updatedProducts[index].productTags = { nodes: [{ name: "Tag" }] };
-          } else {
-            // Desmarca
-            updatedProducts[index].productTags = { nodes: [] };
-          }
-
-          handleSessaoChange(key, { featuredProducts: updatedProducts });
+          const updatedVisibleMap = Object.fromEntries(
+            updatedProducts.map((p) => [p.id, p.visible ?? true])
+          );
+          handleVisibleTagUpdate(visibleTagFieldKey, updatedVisibleMap);
         }}
         onTitleChange={(newTitle) =>
           handleSessaoChange(key, { title: newTitle })
@@ -111,18 +199,15 @@ export default function HomeEditorTemplate({ page }: Props) {
         Sistema de gerenciamento do site
       </Title>
 
-      {/* Hero principal */}
       <HeroEditor
         desktop={pageState.hero?.desktop}
         mobile={pageState.hero?.mobile}
         onChange={handleHeroChange}
       />
 
-      {/* Sessões de produtos */}
       {renderSessaoProdutos("sessao2")}
       {renderSessaoProdutos("sessao3")}
 
-      {/* Sessão 4 - Banner destacado */}
       {pageState.sessao4 && (
         <FeaturedFrameEditor
           image={pageState.sessao4.image}
@@ -133,20 +218,16 @@ export default function HomeEditorTemplate({ page }: Props) {
         />
       )}
 
-      {/* Sessão 5 */}
       {renderSessaoProdutos("sessao5")}
 
-      {/* Banner inferior */}
       <HomeBannerEditor
         desktop={pageState.banner?.desktop}
         mobile={pageState.banner?.mobile}
         onChange={handleBannerChange}
       />
 
-      {/* Sessão 7 */}
       {renderSessaoProdutos("sessao7")}
 
-      {/* Botão de salvar */}
       <div className="w-fit mt-8">
         <ButtonPrimary disabled={isSaving} onClick={handleSave}>
           {isSaving ? "Salvando..." : saved ? "Salvo" : "Salvar alterações"}

@@ -15,6 +15,8 @@ export type SessaoProduct = {
     } | null;
   };
   productTags?: { nodes: { name: string }[] };
+  customTag?: string; // ✨ campo que você pode editar
+  visible?: boolean; // ✨ se o produto está visível ou não
 };
 
 export type ProductSession = {
@@ -44,10 +46,14 @@ export type RawHome = {
   homeSessao2?: {
     titleSessao2?: string | null;
     featuredProducts2?: { nodes: SessaoProduct[] } | null;
+    featuredTags2?: string | null;
+    visibleTag?: string | null; // ✨ campo visível por produto
   } | null;
   homeSessao3?: {
     titleSessao3?: string | null;
     featuredProducts3?: { nodes: SessaoProduct[] } | null;
+    featuredTags3?: string | null;
+    visibleTag?: string | null;
   } | null;
   homeSessao4?: {
     imageSessao4?: {
@@ -59,6 +65,8 @@ export type RawHome = {
   } | null;
   homeSessao5?: {
     featuredProducts5?: { nodes: SessaoProduct[] } | null;
+    featuredTags5?: string | null;
+    visibleTag?: string | null;
   } | null;
   homeBanner?: {
     homeBannerDesktop?: {
@@ -71,6 +79,8 @@ export type RawHome = {
   homeSessao7?: {
     titleSessao7?: string | null;
     featuredProducts7?: { nodes: SessaoProduct[] } | null;
+    featuredTags7?: string | null;
+    visibleTag?: string | null;
   } | null;
 };
 

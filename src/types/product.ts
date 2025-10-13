@@ -35,6 +35,8 @@ export type RelatedProductNode = {
   image?: ImageNode;
   slug?: string;
   tags?: string[]; // <- agora pode ter múltiplas tags
+  customTag?: string; // ← tag editável pelo front
+  visible?: boolean; // ← checkbox de visibilidade
 };
 
 export interface Product {
