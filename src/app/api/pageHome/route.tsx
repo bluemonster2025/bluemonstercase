@@ -158,7 +158,8 @@ export async function POST(req: Request) {
     const token = cookieStore.get("token")?.value;
 
     if (!token) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      // Redireciona para /admin/login se não autenticado
+      return NextResponse.redirect(new URL("/admin/login", req.url));
     }
 
     const data: { pageId: number; acfFields: AcfFields } = await req.json();

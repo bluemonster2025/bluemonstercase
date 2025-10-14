@@ -46,27 +46,26 @@ export async function POST(req: Request) {
       username,
       password,
     });
-
     const { authToken, refreshToken, user } = data.login;
 
     const response = NextResponse.json({ success: true, user });
 
-    // Token de acesso: expira em 30 minutos
+    // Token de 30 minutos
     response.cookies.set("token", authToken, {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 30, // 30 minutos
+      expires: new Date(Date.now() + 30 * 60 * 1000),
     });
 
-    // Refresh token: expira em 7 dias
+    // Refresh token de 7 dias
     response.cookies.set("refreshToken", refreshToken, {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     return response;

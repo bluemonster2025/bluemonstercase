@@ -45,12 +45,13 @@ export async function POST() {
 
     const response = NextResponse.json({ success: true });
 
+    // Renova cookie do token por mais 30 minutos
     response.cookies.set("token", newToken, {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 5,
+      expires: new Date(Date.now() + 30 * 60 * 1000),
     });
 
     return response;

@@ -41,3 +41,59 @@
 .bg-skeleton {
   background: linear-gradient(180deg, #d4d4d4 0%, #eaeaea 51.44%, #d4d4d4 100%);
 }
+
+.custom-checkbox {
+  display: inline-block;
+  position: relative;
+  padding-left: 28px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.custom-checkbox .checkmark {
+  position: absolute;
+  top: -15px;
+  left: 0;
+  height: 32px;
+  width: 32px;
+  background-color: transparent;
+  border: 1px solid #efefff;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+  background-color: transparent; /* mantém transparente */
+  border-color: #efefff; /* mantém a borda */
+}
+
+.custom-checkbox .checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark::after {
+  display: block;
+}
+
+.custom-checkbox .checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 50%; /* centraliza horizontal */
+  top: 50%; /* centraliza vertical */
+  width: 8px; /* tamanho do traço do check */
+  height: 11px;
+  border: solid #282828; /* cor do check */
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg); /* centraliza e rotaciona */
+}

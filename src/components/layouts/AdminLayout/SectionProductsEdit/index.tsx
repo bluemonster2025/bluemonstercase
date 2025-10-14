@@ -116,7 +116,7 @@ export default function SectionProductsEdit({
                   <div className="p-4 flex-1 flex flex-col">
                     <Title
                       as="h2"
-                      className="font-semibold text-sm text-grayscale-400 line-clamp-2"
+                      className="font-semibold text-sm text-grayscale-400"
                     >
                       {item?.name || "Produto sem nome"}
                     </Title>
@@ -125,7 +125,7 @@ export default function SectionProductsEdit({
                       {item?.price ? (
                         <>
                           <span className="text-xs font-medium">R$</span>
-                          <span className="text-[24px] font-bold">
+                          <span className="text-[32px] font-bold">
                             {new Intl.NumberFormat("pt-BR", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -137,33 +137,37 @@ export default function SectionProductsEdit({
                       )}
                     </Text>
 
-                    {/* ✨ TAG */}
-                    <input
-                      type="text"
-                      value={item.customTag || ""}
-                      onChange={(e) =>
-                        handleLocalChange(index, { customTag: e.target.value })
-                      }
-                      className="border p-1 rounded text-sm mt-2"
-                      placeholder="Tag personalizada"
-                    />
+                    <Text className="text-xs text-grayscale-550">Tag:</Text>
 
-                    {/* ✨ Checkbox Visível */}
-                    <label className="flex items-center gap-2 text-sm mt-2">
+                    <div className="flex items-center gap-4">
+                      {/* ✨ Checkbox Visível */}
+                      <label className="custom-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={item.visible}
+                          onChange={() =>
+                            handleLocalChange(index, { visible: !item.visible })
+                          }
+                        />
+                        <span className="checkmark"></span>
+                      </label>
+
+                      {/* ✨ TAG */}
                       <input
-                        type="checkbox"
-                        checked={item.visible}
-                        onChange={() =>
+                        type="text"
+                        value={item.customTag || ""}
+                        onChange={(e) =>
                           handleLocalChange(index, {
-                            visible: !item.visible,
+                            customTag: e.target.value,
                           })
                         }
+                        className="border border-grayscale-100 p-1 rounded text-sm text-grayscale-550 outline-none"
+                        placeholder="Tag personalizada"
                       />
-                      Visível na Home
-                    </label>
+                    </div>
 
                     <ButtonPrimary
-                      className="mt-auto text-sm h-10"
+                      className="mt-auto text-sm h-10 text-grayscale-550"
                       onClick={() => setSelectedIndex(index)}
                     >
                       Trocar produto
