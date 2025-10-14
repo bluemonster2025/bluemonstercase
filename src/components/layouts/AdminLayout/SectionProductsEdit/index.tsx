@@ -28,6 +28,7 @@ export default function SectionProductsEdit({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [localTitle, setLocalTitle] = useState(title);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   // Estado local dos produtos
   const [localProducts, setLocalProducts] = useState<RelatedProductNode[]>(
@@ -69,17 +70,42 @@ export default function SectionProductsEdit({
   };
 
   return (
-    <Section>
-      <input
-        type="text"
-        value={localTitle}
-        onChange={(e) => {
-          setLocalTitle(e.target.value);
-          onTitleChange?.(e.target.value);
-        }}
-        className="text-lg md:text-[22px] font-semibold mb-6 w-full border-b border-grayscale-300 focus:outline-none p-1"
-        placeholder="Título da sessão"
-      />
+    <Section className="flex flex-col gap-4 pb-12">
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <input
+          type="text"
+          value={localTitle}
+          onChange={(e) => {
+            setLocalTitle(e.target.value);
+            onTitleChange?.(e.target.value);
+          }}
+          readOnly={!isEditingTitle} // 🔹 torna o input inacessível até ativar
+          className={`text-lg md:text-[22px] font-semibold text-black w-[90%] ${
+            isEditingTitle
+              ? "border-blue-500 bg-white"
+              : "border-grayscale-300 "
+          } focus:outline-none p-1 ${
+            !isEditingTitle
+              ? "cursor-not-allowed text-grayscale-300 bg-transparent"
+              : ""
+          }`}
+          placeholder="Título da sessão"
+        />
+
+        {/* Botão para habilitar edição */}
+        <button
+          type="button"
+          onClick={() => setIsEditingTitle(!isEditingTitle)}
+          className="bg-white w-[150px] text-black text-sm flex justify-center border border-grayscale-100 items-center cursor-pointer px-4 h-8 rounded font-bold"
+        >
+          {isEditingTitle ? "Concluir edição" : "Editar título"}
+        </button>
+      </div>
+
+      <Text className="mb-8">
+        Altere os produtos que vão aparecer nessa sessão da página inicial do
+        seu site.
+      </Text>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {localProducts.length === 0
@@ -100,7 +126,7 @@ export default function SectionProductsEdit({
               return (
                 <div
                   key={item.id || index}
-                  className="flex flex-col h-full border border-grayscale-200 rounded-lg overflow-hidden"
+                  className="flex flex-col h-full rounded-2xl overflow-hidden bg-white py-8"
                 >
                   <div className="relative w-full aspect-[2/1]">
                     <Image
@@ -113,7 +139,7 @@ export default function SectionProductsEdit({
                     />
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col">
+                  <div className="p-4 flex-1 flex flex-col gap-4">
                     <Title
                       as="h2"
                       className="font-semibold text-sm text-grayscale-400"
@@ -121,7 +147,7 @@ export default function SectionProductsEdit({
                       {item?.name || "Produto sem nome"}
                     </Title>
 
-                    <Text className="text-grayscale-400 mt-2 flex items-baseline gap-1">
+                    <Text className="text-grayscale-400 flex items-baseline gap-1">
                       {item?.price ? (
                         <>
                           <span className="text-xs font-medium">R$</span>
