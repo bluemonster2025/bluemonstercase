@@ -14,7 +14,6 @@ import { parsePrice } from "@/utils/parsePrice";
 type SectionProductsEditProps = {
   products: RelatedProductNode[];
   title: string;
-  visibleTagsJson?: string; // JSON com visíveis
   onUpdate: (index: number, newProduct: RelatedProductNode) => void;
   onTitleChange?: (newTitle: string) => void;
 };
@@ -22,7 +21,6 @@ type SectionProductsEditProps = {
 export default function SectionProductsEdit({
   products,
   title,
-  visibleTagsJson,
   onUpdate,
   onTitleChange,
 }: SectionProductsEditProps) {
@@ -31,30 +29,14 @@ export default function SectionProductsEdit({
   const [searchQuery, setSearchQuery] = useState("");
   const [localTitle, setLocalTitle] = useState(title);
 
-  // Parse das tags visíveis
-  const parsedVisibleTags: Record<string, boolean> = useMemo(() => {
-    if (!visibleTagsJson) return {};
-    try {
-      const obj = JSON.parse(visibleTagsJson);
-      return Object.fromEntries(
-        Object.entries(obj).map(([id, val]) => [id, val === "true"])
-      );
-    } catch {
-      return {};
-    }
-  }, [visibleTagsJson]);
-
   // Estado local dos produtos
   const [localProducts, setLocalProducts] = useState<RelatedProductNode[]>(
     products.map((p) => ({
       ...p,
       customTag: p.customTag || "",
-      visible: parsedVisibleTags[p.id] ?? p.visible ?? true,
+      visible: !!p.visible,
     }))
   );
-
-  // Atualiza título local se mudar do pai
-  useEffect(() => setLocalTitle(title), [title]);
 
   // Atualiza produtos locais se mudar do pai
   useEffect(() => {
@@ -62,10 +44,10 @@ export default function SectionProductsEdit({
       products.map((p) => ({
         ...p,
         customTag: p.customTag || "",
-        visible: parsedVisibleTags[p.id] ?? p.visible ?? true,
+        visible: !!p.visible,
       }))
     );
-  }, [products, parsedVisibleTags]);
+  }, [products]);
 
   // Filtra produtos para o modal
   const filteredProducts = useMemo(() => {
@@ -168,10 +150,10 @@ export default function SectionProductsEdit({
                     <label className="flex items-center gap-2 text-sm mt-2">
                       <input
                         type="checkbox"
-                        checked={!!item.visible} // boolean correto
-                        onChange={(e) =>
+                        checked={item.visible}
+                        onChange={() =>
                           handleLocalChange(index, {
-                            visible: e.target.checked,
+                            visible: !item.visible,
                           })
                         }
                       />
@@ -222,11 +204,11 @@ export default function SectionProductsEdit({
                                   className="w-full text-left p-2 hover:bg-gray-50 transition cursor-pointer"
                                   onClick={() => {
                                     if (selectedIndex !== null) {
+                                      // 🔹 Reset tag e visible ao trocar produto
                                       handleLocalChange(index, {
                                         ...prod,
-                                        customTag:
-                                          localProducts[index].customTag,
-                                        visible: localProducts[index].visible,
+                                        customTag: "",
+                                        visible: false,
                                       });
                                       setSelectedIndex(null);
                                       setSearchQuery("");

@@ -88,6 +88,7 @@ export default function RelatedProducts({
                       <Link
                         href={`/produto/${item.slug}`}
                         className="absolute inset-0 z-0"
+                        aria-label={`Ver detalhes do produto ${item.name}`}
                       />
                     </div>
 
@@ -149,6 +150,7 @@ export default function RelatedProducts({
                     <Link
                       href={`/produto/${item.id}`}
                       className="absolute inset-0 z-0"
+                      aria-label={`Ver detalhes do produto ${item.name}`}
                     />
                   </div>
 

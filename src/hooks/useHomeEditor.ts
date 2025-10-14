@@ -72,6 +72,7 @@ export function useHomeEditor(initialPage: PageHome) {
     }));
   };
 
+  // 🔹 Normaliza produtos para salvar
   const sanitizeProducts = (
     products: ProductSession["featuredProducts"] = []
   ) =>
@@ -81,9 +82,11 @@ export function useHomeEditor(initialPage: PageHome) {
       price: p.price || "",
       featuredImage: p.featuredImage || undefined,
       customTag: p.customTag || "",
-      visible: p.visible ?? true,
+      // 🔹 Garantir boolean e false se não definido
+      visible: p.visible ?? false,
     }));
 
+  // 🔹 Constrói JSON de tags
   const buildFeaturedTags = (products?: ProductSession["featuredProducts"]) => {
     const tags: Record<string, string> = {};
     products?.forEach((p) => {
@@ -92,10 +95,11 @@ export function useHomeEditor(initialPage: PageHome) {
     return JSON.stringify(tags);
   };
 
+  // 🔹 Constrói JSON de visibilidade (true/false)
   const buildVisibleTags = (products?: ProductSession["featuredProducts"]) => {
     const visibles: Record<string, boolean> = {};
     products?.forEach((p) => {
-      visibles[p.id] = p.visible ?? true;
+      visibles[p.id] = p.visible ?? false; // padrão false
     });
     return JSON.stringify(visibles);
   };
@@ -129,7 +133,7 @@ export function useHomeEditor(initialPage: PageHome) {
           featured_tags_2: buildFeaturedTags(
             pageState.sessao2?.featuredProducts
           ),
-          visible_tag: buildVisibleTags(pageState.sessao2?.featuredProducts),
+          visible_tag2: buildVisibleTags(pageState.sessao2?.featuredProducts),
         },
         homeSessao3: {
           title_sessao3: pageState.sessao3?.title || "",
@@ -139,7 +143,7 @@ export function useHomeEditor(initialPage: PageHome) {
           featured_tags_3: buildFeaturedTags(
             pageState.sessao3?.featuredProducts
           ),
-          visible_tag: buildVisibleTags(pageState.sessao3?.featuredProducts),
+          visible_tag3: buildVisibleTags(pageState.sessao3?.featuredProducts),
         },
         homeSessao4: {
           image_sessao4: pageState.sessao4?.image?.databaseId,
@@ -155,7 +159,7 @@ export function useHomeEditor(initialPage: PageHome) {
           featured_tags_5: buildFeaturedTags(
             pageState.sessao5?.featuredProducts
           ),
-          visible_tag: buildVisibleTags(pageState.sessao5?.featuredProducts),
+          visible_tag5: buildVisibleTags(pageState.sessao5?.featuredProducts),
         },
         homeSessao7: {
           title_sessao7: pageState.sessao7?.title || "",
@@ -165,7 +169,7 @@ export function useHomeEditor(initialPage: PageHome) {
           featured_tags_7: buildFeaturedTags(
             pageState.sessao7?.featuredProducts
           ),
-          visible_tag: buildVisibleTags(pageState.sessao7?.featuredProducts),
+          visible_tag7: buildVisibleTags(pageState.sessao7?.featuredProducts),
         },
       },
     };

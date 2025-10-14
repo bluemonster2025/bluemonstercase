@@ -22,6 +22,7 @@ export default function HeaderMobile({ logo }: Props) {
       <button
         onClick={() => setIsOpen(true)}
         className="h-10 w-10 flex items-center justify-center"
+        aria-label="Abrir menu"
       >
         <Icon name="IoMdMenu" size={24} color="#000" />
       </button>
@@ -36,6 +37,7 @@ export default function HeaderMobile({ logo }: Props) {
             <button
               onClick={() => setIsOpen(false)}
               className="h-10 w-10 flex items-center justify-center"
+              aria-label="Fechar menu"
             >
               <Icon name="IoMdClose" size={24} color="#272934" />
             </button>

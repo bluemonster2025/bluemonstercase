@@ -83,6 +83,7 @@ export default function SectionProducts({
                       <Link
                         href={p.uri || "#"}
                         className="absolute inset-0 z-0"
+                        aria-label={`Ver detalhes do produto ${p.name}`}
                       />
                     </div>
 
@@ -150,7 +151,11 @@ export default function SectionProducts({
                     sizes="(max-width: 768px) 100vw, 600px"
                     className="object-contain"
                   />
-                  <Link href={p.uri || "#"} className="absolute inset-0 z-0" />
+                  <Link
+                    href={p.uri || "#"}
+                    className="absolute inset-0 z-0"
+                    aria-label={`Ver detalhes do produto ${p.name}`}
+                  />
                 </div>
 
                 <div className="p-4 flex-1 flex flex-col">

@@ -7,54 +7,7 @@ import {
   ProductSession,
 } from "@/types/home";
 
-// Função básica para mapear sessão sem tags/visible
-export function mapRawSession(rawSession?: {
-  title?: string | null;
-  featuredProducts?: { nodes: SessaoProduct[] } | null;
-}): ProductSession | undefined {
-  if (!rawSession) return undefined;
-
-  const featuredProducts: SessaoProduct[] =
-    rawSession.featuredProducts?.nodes.map((p) => ({
-      ...p,
-      customTag: p.customTag || "",
-      visible: p.visible ?? true,
-    })) || [];
-
-  return {
-    title: rawSession.title || undefined,
-    featuredProducts,
-  };
-}
-
-// 🔹 Função genérica para mapear sessão com tags e visible
-function mapRawSessionWithTagsAndVisible(
-  rawSession?: {
-    title?: string | null;
-    featuredProducts?: { nodes: SessaoProduct[] } | null;
-  },
-  tags?: Record<string, string>,
-  visibleTags?: Record<string, boolean>
-): ProductSession | undefined {
-  if (!rawSession) return undefined;
-
-  const featuredProducts: SessaoProduct[] =
-    rawSession.featuredProducts?.nodes.map((p) => ({
-      ...p,
-      customTag: (tags && tags[p.id]) || "",
-      visible:
-        (visibleTags && typeof visibleTags[p.id] !== "undefined"
-          ? visibleTags[p.id]
-          : true) ?? true,
-    })) || [];
-
-  return {
-    title: rawSession.title || undefined,
-    featuredProducts,
-  };
-}
-
-// 🔹 Função genérica para parsear tags JSON
+// 🔹 Parse genérico de tags JSON
 function parseFeaturedTags(tagsJson?: string | null): Record<string, string> {
   if (!tagsJson) return {};
   try {
@@ -64,14 +17,14 @@ function parseFeaturedTags(tagsJson?: string | null): Record<string, string> {
   }
 }
 
-// 🔹 Função genérica para parsear visible JSON
+// 🔹 Parse genérico de visible JSON → retorna boolean
+// 🔹 Parse genérico de visible JSON → retorna boolean
 function parseVisibleTags(
   visibleJson?: string | null
 ): Record<string, boolean> {
   if (!visibleJson) return {};
   try {
     const parsed = JSON.parse(visibleJson);
-    // garante boolean
     return Object.fromEntries(
       Object.entries(parsed).map(([k, v]) => [k, v === true || v === "true"])
     );
@@ -80,12 +33,68 @@ function parseVisibleTags(
   }
 }
 
-export function mapHome(raw: RawHome): PageHome {
-  const heroDesktop = raw.homeHero?.heroImage?.node;
-  const heroMobile = raw.homeHero?.heroImageMobile?.node;
-  const bannerDesktop = raw.homeBanner?.homeBannerDesktop?.node;
-  const bannerMobile = raw.homeBanner?.homeBannerMobile?.node;
+// 🔹 Função genérica para mapear qualquer sessão com tags e visible
+function mapSession(
+  rawSession?: {
+    title?: string | null;
+    featuredProducts?: { nodes: SessaoProduct[] } | null;
+  },
+  tagsJson?: string | null,
+  visibleJson?: string | null
+): ProductSession | undefined {
+  if (!rawSession) return undefined;
 
+  const tags = parseFeaturedTags(tagsJson);
+  const visibleTags = parseVisibleTags(visibleJson);
+
+  const featuredProducts: SessaoProduct[] =
+    rawSession.featuredProducts?.nodes.map((p) => ({
+      ...p,
+      customTag: tags[p.id] || "",
+      // 🔹 Se não tiver entry no JSON, assume false
+      visible: visibleTags[p.id] ?? false,
+    })) || [];
+
+  return {
+    title: rawSession.title || undefined,
+    featuredProducts,
+  };
+}
+
+// 🔹 Tipagem segura para sessões
+type RawSessionKeys =
+  | "homeSessao2"
+  | "homeSessao3"
+  | "homeSessao5"
+  | "homeSessao7";
+
+type RawSessionMap = {
+  homeSessao2?: {
+    titleSessao2?: string | null;
+    featuredProducts2?: { nodes: SessaoProduct[] } | null;
+    featuredTags2?: string | null;
+    visibleTag2?: string | null;
+  };
+  homeSessao3?: {
+    titleSessao3?: string | null;
+    featuredProducts3?: { nodes: SessaoProduct[] } | null;
+    featuredTags3?: string | null;
+    visibleTag3?: string | null;
+  };
+  homeSessao5?: {
+    featuredProducts5?: { nodes: SessaoProduct[] } | null;
+    featuredTags5?: string | null;
+    visibleTag5?: string | null;
+  };
+  homeSessao7?: {
+    titleSessao7?: string | null;
+    featuredProducts7?: { nodes: SessaoProduct[] } | null;
+    featuredTags7?: string | null;
+    visibleTag7?: string | null;
+  };
+};
+
+export function mapHome(raw: RawHome): PageHome {
   const mapNodeToBanner = (
     desktopNode?: {
       databaseId?: number;
@@ -114,34 +123,76 @@ export function mapHome(raw: RawHome): PageHome {
       : { src: "", alt: "" },
   });
 
-  // 🔹 Parse tags e visible de todas as sessões
-  const sessao2Tags = parseFeaturedTags(raw.homeSessao2?.featuredTags2);
-  const sessao3Tags = parseFeaturedTags(raw.homeSessao3?.featuredTags3);
-  const sessao5Tags = parseFeaturedTags(raw.homeSessao5?.featuredTags5);
-  const sessao7Tags = parseFeaturedTags(raw.homeSessao7?.featuredTags7);
+  const heroDesktop = raw.homeHero?.heroImage?.node;
+  const heroMobile = raw.homeHero?.heroImageMobile?.node;
+  const bannerDesktop = raw.homeBanner?.homeBannerDesktop?.node;
+  const bannerMobile = raw.homeBanner?.homeBannerMobile?.node;
 
-  const sessao2Visible = parseVisibleTags(raw.homeSessao2?.visibleTag);
-  const sessao3Visible = parseVisibleTags(raw.homeSessao3?.visibleTag);
-  const sessao5Visible = parseVisibleTags(raw.homeSessao5?.visibleTag);
-  const sessao7Visible = parseVisibleTags(raw.homeSessao7?.visibleTag);
-
-  const sessao2 = mapRawSessionWithTagsAndVisible(
+  // 🔹 Configuração das sessões dinâmicas
+  const sessaoConfig = [
     {
-      title: raw.homeSessao2?.titleSessao2,
-      featuredProducts: raw.homeSessao2?.featuredProducts2,
+      key: "sessao2",
+      rawKey: "homeSessao2",
+      titleKey: "titleSessao2",
+      productsKey: "featuredProducts2",
+      tagsKey: "featuredTags2",
+      visibleKey: "visibleTag2",
     },
-    sessao2Tags,
-    sessao2Visible
-  );
-
-  const sessao3 = mapRawSessionWithTagsAndVisible(
     {
-      title: raw.homeSessao3?.titleSessao3,
-      featuredProducts: raw.homeSessao3?.featuredProducts3,
+      key: "sessao3",
+      rawKey: "homeSessao3",
+      titleKey: "titleSessao3",
+      productsKey: "featuredProducts3",
+      tagsKey: "featuredTags3",
+      visibleKey: "visibleTag3",
     },
-    sessao3Tags,
-    sessao3Visible
-  );
+    {
+      key: "sessao5",
+      rawKey: "homeSessao5",
+      titleKey: undefined,
+      productsKey: "featuredProducts5",
+      tagsKey: "featuredTags5",
+      visibleKey: "visibleTag5",
+    },
+    {
+      key: "sessao7",
+      rawKey: "homeSessao7",
+      titleKey: "titleSessao7",
+      productsKey: "featuredProducts7",
+      tagsKey: "featuredTags7",
+      visibleKey: "visibleTag7",
+    },
+  ] as const;
+
+  const sessions: Partial<PageHome> = {};
+
+  for (const cfg of sessaoConfig) {
+    const rawKey = cfg.rawKey as RawSessionKeys;
+    const rawSession = (raw as RawSessionMap)[rawKey];
+    if (!rawSession) continue;
+
+    sessions[cfg.key] = mapSession(
+      {
+        title: cfg.titleKey
+          ? (rawSession[cfg.titleKey as keyof typeof rawSession] as
+              | string
+              | null
+              | undefined)
+          : undefined,
+        featuredProducts: rawSession[
+          cfg.productsKey as keyof typeof rawSession
+        ] as { nodes: SessaoProduct[] } | null,
+      },
+      rawSession[cfg.tagsKey as keyof typeof rawSession] as
+        | string
+        | null
+        | undefined,
+      rawSession[cfg.visibleKey as keyof typeof rawSession] as
+        | string
+        | null
+        | undefined
+    );
+  }
 
   const sessao4Node = raw.homeSessao4?.imageSessao4?.node;
   const sessao4: Sessao4 | undefined = sessao4Node
@@ -153,31 +204,13 @@ export function mapHome(raw: RawHome): PageHome {
       }
     : undefined;
 
-  const sessao5 = mapRawSessionWithTagsAndVisible(
-    { featuredProducts: raw.homeSessao5?.featuredProducts5 },
-    sessao5Tags,
-    sessao5Visible
-  );
-
-  const sessao7 = mapRawSessionWithTagsAndVisible(
-    {
-      title: raw.homeSessao7?.titleSessao7,
-      featuredProducts: raw.homeSessao7?.featuredProducts7,
-    },
-    sessao7Tags,
-    sessao7Visible
-  );
-
   return {
     databaseId: raw.databaseId,
     slug: raw.slug || "home",
     title: raw.title || "home",
     hero: mapNodeToBanner(heroDesktop, heroMobile),
-    sessao2,
-    sessao3,
-    sessao4,
-    sessao5,
     banner: mapNodeToBanner(bannerDesktop, bannerMobile),
-    sessao7,
+    sessao4,
+    ...sessions, // adiciona sessao2,3,5,7 dinamicamente
   };
 }
