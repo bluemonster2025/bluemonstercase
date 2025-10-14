@@ -152,7 +152,7 @@ export default function RelatedProducts({
                       fetchPriority="low"
                     />
                     <Link
-                      href={`/produto/${item.id}`}
+                      href={`/produto/${item.slug}`}
                       className="absolute inset-0 z-0"
                       aria-label={`Ver detalhes do produto ${item.name}`}
                     />
