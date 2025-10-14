@@ -28,6 +28,8 @@ export default function FeaturedFrame({
             fill
             sizes="(max-width: 768px) 100vw, 385px"
             className="rounded-lg object-contain"
+            loading="lazy"
+            fetchPriority="low"
           />
         </div>
 

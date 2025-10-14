@@ -45,6 +45,7 @@ export default function CategoriesList({
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
               className="object-cover w-full h-full"
               priority
+              fetchPriority="high"
             />
           )}
           <div className="absolute inset-0 bg-black/40 flex items-end justify-start p-8">

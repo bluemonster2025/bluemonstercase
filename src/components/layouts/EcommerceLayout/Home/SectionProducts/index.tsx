@@ -79,6 +79,8 @@ export default function SectionProducts({
                         fill
                         sizes="(max-width: 768px) 100vw, 600px"
                         className="object-contain"
+                        loading="lazy"
+                        fetchPriority="low"
                       />
                       <Link
                         href={p.uri || "#"}
@@ -150,6 +152,8 @@ export default function SectionProducts({
                     fill
                     sizes="(max-width: 768px) 100vw, 600px"
                     className="object-contain"
+                    loading="lazy"
+                    fetchPriority="low"
                   />
                   <Link
                     href={p.uri || "#"}

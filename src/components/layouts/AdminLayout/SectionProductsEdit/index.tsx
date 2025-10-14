@@ -108,6 +108,8 @@ export default function SectionProductsEdit({
                       alt={item?.image?.altText || item?.name || "Produto"}
                       fill
                       className="object-contain bg-white"
+                      loading="lazy"
+                      fetchPriority="low"
                     />
                   </div>
 

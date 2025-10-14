@@ -107,6 +107,8 @@ export default function ProductInfo({
                       fill
                       sizes="32px"
                       className="object-cover"
+                      loading="lazy"
+                      fetchPriority="low"
                     />
                   </div>
 
@@ -147,6 +149,8 @@ export default function ProductInfo({
                           fill
                           sizes="32px"
                           className="object-cover"
+                          loading="lazy"
+                          fetchPriority="low"
                         />
                       </div>
 
@@ -205,6 +209,8 @@ export default function ProductInfo({
               fill
               sizes="(max-width: 768px) 100vw, 185px"
               className="object-contain"
+              loading="lazy"
+              fetchPriority="low"
             />
           </div>
         </div>

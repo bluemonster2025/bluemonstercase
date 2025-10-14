@@ -84,6 +84,8 @@ export default function RelatedProducts({
                         fill
                         sizes="(max-width: 768px) 100vw, 600px"
                         className="object-contain"
+                        loading="lazy"
+                        fetchPriority="low"
                       />
                       <Link
                         href={`/produto/${item.slug}`}
@@ -146,6 +148,8 @@ export default function RelatedProducts({
                       fill
                       sizes="(max-width: 768px) 100vw, 600px"
                       className="object-contain"
+                      loading="lazy"
+                      fetchPriority="low"
                     />
                     <Link
                       href={`/produto/${item.id}`}

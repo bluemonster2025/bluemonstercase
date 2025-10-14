@@ -25,6 +25,7 @@ export default function Logo({
           sizes="(max-width: 768px) 100vw, 112px"
           className="object-contain"
           priority
+          fetchPriority="high"
         />
       </div>
     </Link>

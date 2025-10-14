@@ -32,6 +32,8 @@ export default function ImageUpload({
             alt={label}
             fill
             className={`object-cover ${imgClass}`}
+            loading="lazy"
+            fetchPriority="low"
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">

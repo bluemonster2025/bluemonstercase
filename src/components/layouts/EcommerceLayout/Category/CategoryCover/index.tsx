@@ -34,6 +34,8 @@ export default function CategoryCover({ category }: CategoryCoverProps) {
                 fill
                 className="object-cover object-center"
                 sizes="100vw"
+                priority
+                fetchPriority="high"
               />
             </div>
           )}
@@ -45,6 +47,8 @@ export default function CategoryCover({ category }: CategoryCoverProps) {
                 fill
                 className="object-cover object-center"
                 sizes="100vw"
+                priority
+                fetchPriority="high"
               />
             </div>
           )}

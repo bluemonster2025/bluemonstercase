@@ -150,6 +150,8 @@ export default function MediaModal({ onSelect, onClose }: MediaModalProps) {
                   width={150}
                   height={150}
                   className="object-cover w-full h-24"
+                  loading="lazy"
+                  fetchPriority="low"
                 />
               </div>
             ))}

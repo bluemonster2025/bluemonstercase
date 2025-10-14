@@ -88,6 +88,8 @@ export default function SearchResults({
                       fill
                       sizes="(max-width: 768px) 100vw, 600px"
                       className="object-contain"
+                      loading="lazy"
+                      fetchPriority="low"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center">

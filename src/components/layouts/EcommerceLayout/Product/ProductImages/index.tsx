@@ -72,6 +72,8 @@ export default function ProductImages({
                       fill
                       sizes="80px"
                       className="object-contain"
+                      loading="lazy"
+                      fetchPriority="low"
                     />
                   </div>
                 </button>
@@ -89,6 +91,8 @@ export default function ProductImages({
               fill
               sizes="(max-width: 768px) 100vw, 600px"
               className="object-contain"
+              loading="lazy"
+              fetchPriority="low"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg" />
