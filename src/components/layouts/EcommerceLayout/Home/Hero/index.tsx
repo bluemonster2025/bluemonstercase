@@ -31,7 +31,7 @@ export default function HeroComponent({
         </div>
       </Section>
       <div className="pb-8">
-        <div className="block md:hidden relative w-full aspect-square">
+        <div className="block md:hidden relative w-full aspect-[1.01/1]">
           {imgUrlMobile && (
             <Image
               src={imgUrlMobile}
