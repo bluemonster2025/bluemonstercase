@@ -62,13 +62,17 @@ export default function FeaturedFrameEditor({
           </div>
 
           <InputField
-            className="text-3xl font-bold bg-white"
+            className={`text-3xl font-bold w-[90%] ${
+              isEditingTitle ? "bg-white" : "border-none bg-transparent"
+            } focus:outline-none p-1 ${
+              !isEditingTitle
+                ? "cursor-not-allowed text-grayscale-300 bg-transparent"
+                : ""
+            }`}
             placeholder="Digite o título..."
             value={title}
             disabled={!isEditingTitle}
-            onChange={(val) =>
-              onChange?.({ image, title: val, text, linkButton })
-            }
+            onChange={(val) => onChange?.({ title: val })}
           />
 
           {/* Texto */}

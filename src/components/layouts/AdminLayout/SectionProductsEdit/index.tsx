@@ -10,6 +10,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from "./Dialog";
 import { RelatedProductNode } from "@/types/product";
 import { parsePrice } from "@/utils/parsePrice";
+import InputField from "@/components/elements/InputField";
 
 type SectionProductsEditProps = {
   products: RelatedProductNode[];
@@ -72,34 +73,38 @@ export default function SectionProductsEdit({
   return (
     <Section className="flex flex-col gap-4 pb-12">
       <div className="flex items-center justify-between gap-2 mb-1">
-        <input
-          type="text"
-          value={localTitle}
-          onChange={(e) => {
-            setLocalTitle(e.target.value);
-            onTitleChange?.(e.target.value);
-          }}
-          readOnly={!isEditingTitle} // 🔹 torna o input inacessível até ativar
-          className={`text-lg md:text-[22px] font-semibold text-black w-[90%] ${
-            isEditingTitle
-              ? "border-blue-500 bg-white"
-              : "border-grayscale-300 "
+        <InputField
+          className={`text-lg md:text-[22px] font-semibold w-[90%] ${
+            isEditingTitle ? "bg-white" : "border-none bg-transparent"
           } focus:outline-none p-1 ${
-            !isEditingTitle
-              ? "cursor-not-allowed text-grayscale-300 bg-transparent"
-              : ""
+            !isEditingTitle ? "cursor-not-allowed text-grayscale-300" : ""
           }`}
           placeholder="Título da sessão"
+          value={localTitle}
+          disabled={!isEditingTitle}
+          onChange={(val) => {
+            setLocalTitle(val);
+            onTitleChange?.(val);
+          }}
         />
 
         {/* Botão para habilitar edição */}
-        <button
+        {/* <button
           type="button"
           onClick={() => setIsEditingTitle(!isEditingTitle)}
-          className="bg-white w-[150px] text-black text-sm flex justify-center border border-grayscale-100 items-center cursor-pointer px-4 h-8 rounded font-bold"
+          className="bg-white w-[180px] text-black text-sm flex justify-center border border-grayscale-100 items-center cursor-pointer px-4 h-8 rounded font-bold"
         >
           {isEditingTitle ? "Concluir edição" : "Editar título"}
-        </button>
+        </button> */}
+
+        <div className="w-fit">
+          <ButtonPrimary
+            className="h-6 rounded font-bold"
+            onClick={() => setIsEditingTitle((prev) => !prev)}
+          >
+            {isEditingTitle ? "Concluir edição" : "Editar título"}
+          </ButtonPrimary>
+        </div>
       </div>
 
       <Text className="mb-8">

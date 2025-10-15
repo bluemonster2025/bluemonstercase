@@ -42,7 +42,7 @@ export default function InputField({
   rows = 4,
 }: InputFieldProps) {
   const baseClasses = `
-    w-full rounded border p-4 bg-white outline-none transition-all
+    w-full rounded border p-4 outline-none transition-all
     ${error ? "border-redscale-100" : "border-grayscale-100"}
     ${disabled ? "opacity-60 cursor-not-allowed" : ""}
     ${className}

@@ -22,53 +22,30 @@ function parseJwt(token: string) {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("token")?.value;
-  const refreshToken = req.cookies.get("refreshToken")?.value;
+  const now = Math.floor(Date.now() / 1000);
 
   // 1️⃣ Proteção JWT para rotas /admin
   if (protectedPaths.some((path) => pathname.startsWith(path))) {
-    if (!token && !refreshToken) {
+    if (!token) {
       const res = NextResponse.redirect(new URL("/admin/login", req.url));
-      res.cookies.delete("token");
-      res.cookies.delete("refreshToken");
+      res.cookies.delete({ name: "token", path: "/" });
       return res;
     }
 
-    if (token) {
-      const decoded = parseJwt(token);
-      const now = Math.floor(Date.now() / 1000);
-
-      if (!decoded || (decoded.exp && decoded.exp < now)) {
-        // Tenta refresh apenas se refreshToken existir E token expirou de fato
-        if (refreshToken) {
-          try {
-            const refreshRes = await fetch(
-              `${req.nextUrl.origin}/api/refresh`,
-              {
-                method: "POST",
-                headers: { cookie: `refreshToken=${refreshToken}` },
-              }
-            );
-            if (refreshRes.ok) {
-              // Retorna e continua com token renovado
-              return NextResponse.next();
-            }
-          } catch {
-            // Falha no refresh, redireciona para login
-          }
-        }
-
-        // Token expirado ou refresh falhou
-        const res = NextResponse.redirect(new URL("/admin/login", req.url));
-        res.cookies.delete("token");
-        res.cookies.delete("refreshToken");
-        return res;
-      }
+    const decoded = parseJwt(token);
+    if (!decoded || (decoded.exp && decoded.exp < now)) {
+      const res = NextResponse.redirect(new URL("/admin/login", req.url));
+      res.cookies.delete({ name: "token", path: "/" });
+      return res;
     }
   }
 
   // 2️⃣ Redireciona login se já estiver logado
   if (pathname === "/admin/login" && token) {
-    return NextResponse.redirect(new URL("/admin/home", req.url));
+    const decoded = parseJwt(token);
+    if (decoded && (!decoded.exp || decoded.exp > now)) {
+      return NextResponse.redirect(new URL("/admin/home", req.url));
+    }
   }
 
   // 3️⃣ Basic Auth para o resto do site
@@ -80,8 +57,8 @@ export async function middleware(req: NextRequest) {
     if (authHeader) {
       const [scheme, encoded] = authHeader.split(" ");
       if (scheme === "Basic" && encoded) {
-        const decoded = Buffer.from(encoded, "base64").toString("utf-8");
-        const [user, pass] = decoded.split(":");
+        const decodedAuth = Buffer.from(encoded, "base64").toString("utf-8");
+        const [user, pass] = decodedAuth.split(":");
         if (user === username && pass === password) return NextResponse.next();
       }
     }
