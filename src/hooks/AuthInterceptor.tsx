@@ -15,7 +15,7 @@ export function AuthInterceptor() {
     // 🔁 Atualiza token a cada 10 minutos (antes de expirar em 15min)
     const interval = setInterval(async () => {
       try {
-        const res = await fetch("/api/refresh", { method: "POST" });
+        const res = await fetch("/api/auth/refresh", { method: "POST" });
 
         if (res.status === 401) {
           console.warn("🔒 Refresh token expirou — limpando user...");

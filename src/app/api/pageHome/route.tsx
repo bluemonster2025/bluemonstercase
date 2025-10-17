@@ -155,7 +155,7 @@ export async function GET() {
 // Função para refresh do token
 // ------------------------
 async function refreshToken(): Promise<void> {
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/refresh`, {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
     method: "POST",
   });
 }

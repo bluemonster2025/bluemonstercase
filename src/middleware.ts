@@ -76,13 +76,16 @@ export async function middleware(req: NextRequest) {
       // Token expirado → tenta refresh
       if (refreshToken) {
         try {
-          const refreshRes = await fetch(`${req.nextUrl.origin}/api/refresh`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: `refreshToken=${refreshToken}`,
-            },
-          });
+          const refreshRes = await fetch(
+            `${req.nextUrl.origin}/api/auth/refresh`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Cookie: `refreshToken=${refreshToken}`,
+              },
+            }
+          );
 
           if (refreshRes.ok) {
             // ✅ Refresh bem-sucedido

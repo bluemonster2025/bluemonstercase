@@ -123,38 +123,40 @@ export default function MediaModal({ onSelect, onClose }: MediaModalProps) {
           <p>Nenhuma imagem encontrada.</p>
         ) : (
           <div className="grid grid-cols-4 gap-4">
-            {media.map((item) => (
-              <div
-                key={item.databaseId}
-                className="cursor-pointer rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500"
-                onClick={() =>
-                  onSelect(
-                    item.sourceUrl,
-                    item.altText ||
+            {media
+              .filter((item) => !!item.sourceUrl)
+              .map((item) => (
+                <div
+                  key={item.databaseId}
+                  className="cursor-pointer rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500"
+                  onClick={() =>
+                    onSelect(
+                      item.sourceUrl,
+                      item.altText ||
+                        (typeof item.title === "string"
+                          ? item.title
+                          : item.title.rendered),
+                      item.databaseId
+                    )
+                  }
+                >
+                  <Image
+                    src={item.sourceUrl}
+                    alt={
+                      item.altText ||
                       (typeof item.title === "string"
                         ? item.title
-                        : item.title.rendered),
-                    item.databaseId
-                  )
-                }
-              >
-                <Image
-                  src={item.sourceUrl}
-                  alt={
-                    item.altText ||
-                    (typeof item.title === "string"
-                      ? item.title
-                      : item.title.rendered) ||
-                    ""
-                  }
-                  width={150}
-                  height={150}
-                  className="object-cover w-full h-24"
-                  loading="lazy"
-                  fetchPriority="low"
-                />
-              </div>
-            ))}
+                        : item.title.rendered) ||
+                      "Imagem"
+                    }
+                    width={150}
+                    height={150}
+                    className="object-cover w-full h-24"
+                    loading="lazy"
+                    fetchPriority="low"
+                  />
+                </div>
+              ))}
           </div>
         )}
       </div>

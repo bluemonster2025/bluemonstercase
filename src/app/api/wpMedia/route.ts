@@ -17,7 +17,12 @@ export interface MediaItem {
 
 interface MediaItemsResponse {
   mediaItems: {
-    nodes: MediaItem[];
+    nodes: Array<{
+      databaseId: number;
+      sourceUrl?: string | null;
+      altText?: string | null;
+      title?: { rendered: string } | string | null;
+    }>;
   };
 }
 
@@ -34,7 +39,7 @@ interface GraphQLResponse<T = unknown> {
 // Função para refresh do token
 // ------------------------
 async function refreshToken(): Promise<void> {
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/refresh`, {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
     method: "POST",
   });
 }
@@ -59,7 +64,6 @@ async function fetchWithToken<T>(query: string): Promise<GraphQLResponse<T>> {
 
   const result: GraphQLResponse<T> = await res.json();
 
-  // Se token expirou → refresh e retry
   if (result.errors?.some((e) => e.message.includes("Expired token"))) {
     await refreshToken();
     token = (await cookies()).get("token")?.value;
@@ -106,7 +110,22 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(result.data?.mediaItems.nodes || []);
+    const nodes = result.data?.mediaItems.nodes || [];
+
+    // ✅ Garante campos válidos
+    const media: MediaItem[] = nodes
+      .map((item) => ({
+        databaseId: item.databaseId,
+        sourceUrl: item.sourceUrl || "", // string vazia como fallback
+        altText: item.altText || "",
+        title:
+          typeof item.title === "string"
+            ? item.title
+            : item.title?.rendered || "",
+      }))
+      .filter((item) => item.sourceUrl); // filtra items sem sourceUrl
+
+    return NextResponse.json(media);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erro interno";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -162,11 +181,13 @@ export async function POST(req: Request) {
           { status: retryRes.status }
         );
 
+      const uploaded = retryData;
+
       return NextResponse.json({
-        databaseId: retryData.id,
-        sourceUrl: retryData.source_url,
-        altText: retryData.alt_text,
-        title: retryData.title.rendered,
+        databaseId: uploaded.id,
+        sourceUrl: uploaded.source_url || "",
+        altText: uploaded.alt_text || "",
+        title: uploaded.title?.rendered || "",
       });
     }
 
@@ -176,9 +197,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       databaseId: data.id,
-      sourceUrl: data.source_url,
-      altText: data.alt_text,
-      title: data.title.rendered,
+      sourceUrl: data.source_url || "",
+      altText: data.alt_text || "",
+      title: data.title?.rendered || "",
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erro interno";
