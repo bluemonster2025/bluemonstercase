@@ -1,7 +1,7 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getAuthUser } from "@/lib/auth";
 import { mapHome } from "@/utils/mappers/mapHome";
 import { RawHome, PageHome } from "@/types/home";
 
@@ -154,15 +154,15 @@ interface UpdateACFResponse {
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+    // ✅ Verifica autenticação e atualiza token se necessário
+    const user = await getAuthUser();
 
-    if (!token) {
-      // Redireciona para /admin/login se não autenticado
-      return NextResponse.redirect(new URL("/admin/login", req.url));
+    if (!user || !user.token) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const data: { pageId: number; acfFields: AcfFields } = await req.json();
+    const { pageId, acfFields }: { pageId: number; acfFields: AcfFields } =
+      await req.json();
 
     const mutation = `
       mutation UpdateAnyACF($input: UpdateACFFieldsInput!) {
@@ -174,8 +174,8 @@ export async function POST(req: Request) {
 
     const variables = {
       input: {
-        pageId: data.pageId,
-        acfFields: JSON.stringify(data.acfFields),
+        pageId,
+        acfFields: JSON.stringify(acfFields),
       },
     };
 
@@ -183,7 +183,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${user.token}`, // ✅ usa token atualizado
       },
       body: JSON.stringify({ query: mutation, variables }),
     });
@@ -202,6 +202,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    console.error("Erro em /api/pageHome POST:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Erro interno" },
       { status: 500 }

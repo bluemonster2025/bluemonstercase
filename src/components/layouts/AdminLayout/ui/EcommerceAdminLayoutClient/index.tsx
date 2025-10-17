@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import Header from "../Header";
 import Footer from "../Footer";
 import { RawImage } from "@/types/siteSettings";
-import RefreshTokenKeeper from "../../RefreshTokenKeeper";
+import { AuthInterceptor } from "@/hooks/AuthInterceptor";
 
 interface Props {
   children: ReactNode;
@@ -14,9 +14,10 @@ interface Props {
 export default function EcommerceAdminLayoutClient({ children, logo }: Props) {
   return (
     <div className="min-h-screen flex flex-col">
-      <RefreshTokenKeeper />
-      <Header logo={logo ?? undefined} />
+      <AuthInterceptor />
 
+      {/* <RefreshTokenKeeper /> */}
+      <Header logo={logo ?? undefined} />
       <main className="bg-grayscale-150">{children}</main>
       <Footer />
     </div>

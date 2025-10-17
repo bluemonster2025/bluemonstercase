@@ -2,11 +2,10 @@
 
 import { NextResponse } from "next/server";
 import { getGraphQLClient } from "@/lib/graphql";
-import { ClientError } from "graphql-request";
 
 const LOGIN_MUTATION = `
 mutation Login($username: String!, $password: String!) {
-  login(input: { clientMutationId: "login", username: $username, password: $password }) {
+  login(input: { username: $username, password: $password }) {
     authToken
     refreshToken
     user {
@@ -33,47 +32,45 @@ interface LoginResponse {
 export async function POST(req: Request) {
   const { username, password } = await req.json();
 
-  if (!username || !password) {
+  if (!username || !password)
     return NextResponse.json(
-      { error: "Usuário e senha são obrigatórios." },
+      { error: "Usuário e senha são obrigatórios" },
       { status: 400 }
     );
-  }
 
   try {
     const client = getGraphQLClient();
-    const data = await client.request<LoginResponse>(LOGIN_MUTATION, {
+    const { login } = await client.request<LoginResponse>(LOGIN_MUTATION, {
       username,
       password,
     });
-    const { authToken, refreshToken, user } = data.login;
 
-    const response = NextResponse.json({ success: true, user });
+    const res = NextResponse.json({ success: true, user: login.user });
 
-    // Token de 30 minutos
-    response.cookies.set("token", authToken, {
+    // 🔐 Token curto — expira em 30 minutos
+    res.cookies.set("token", login.authToken, {
       httpOnly: true,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      expires: new Date(Date.now() + 30 * 60 * 1000),
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(Date.now() + 15 * 60 * 1000),
     });
 
-    // Refresh token de 7 dias
-    response.cookies.set("refreshToken", refreshToken, {
+    // 🔄 Refresh token — expira em 7 dias
+    res.cookies.set("refreshToken", login.refreshToken, {
       httpOnly: true,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return response;
-  } catch (err) {
-    let errorMessage = "Usuário ou senha inválidos!";
-    if (err instanceof ClientError && err.response?.errors?.length) {
-      errorMessage = err.response.errors[0].message;
-    }
-    return NextResponse.json({ error: errorMessage }, { status: 401 });
+    return res;
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json(
+      { error: "Usuário ou senha inválidos" },
+      { status: 401 }
+    );
   }
 }

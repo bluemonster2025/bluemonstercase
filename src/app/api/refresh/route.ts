@@ -7,9 +7,7 @@ const WP_URL = process.env.WOO_SITE_URL!;
 
 const REFRESH_MUTATION = `
 mutation RefreshAuthToken($refreshToken: String!) {
-  refreshJwtAuthToken(
-    input: { clientMutationId: "refresh", jwtRefreshToken: $refreshToken }
-  ) {
+  refreshJwtAuthToken(input: { jwtRefreshToken: $refreshToken }) {
     authToken
   }
 }
@@ -33,28 +31,31 @@ export async function POST() {
       }),
     });
 
-    const json = await res.json();
-    const newToken = json?.data?.refreshJwtAuthToken?.authToken;
+    const data = await res.json();
+    const newToken = data?.data?.refreshJwtAuthToken?.authToken;
 
     if (!newToken) {
-      return NextResponse.json(
-        { error: "Falha ao atualizar token" },
+      const resp = NextResponse.json(
+        { error: "Refresh falhou" },
         { status: 401 }
       );
+      resp.cookies.set("token", "", { expires: new Date(0), path: "/" });
+      resp.cookies.set("refreshToken", "", { expires: new Date(0), path: "/" });
+      return resp;
     }
 
-    const response = NextResponse.json({ success: true });
+    const resp = NextResponse.json({ success: true });
 
-    // Renova cookie do token por mais 30 minutos
-    response.cookies.set("token", newToken, {
+    // 🔐 Novo token curto (30 min)
+    resp.cookies.set("token", newToken, {
       httpOnly: true,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      expires: new Date(Date.now() + 30 * 60 * 1000),
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(Date.now() + 15 * 60 * 1000),
     });
 
-    return response;
+    return resp;
   } catch {
     return NextResponse.json(
       { error: "Erro ao atualizar token" },

@@ -21,10 +21,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Busca usuário logado
   async function fetchUser() {
     try {
       const res = await fetch("/api/auth/me", {
-        credentials: "include", // 🔥 garante que cookies sejam enviados
+        credentials: "include",
       });
 
       if (res.ok) {
@@ -44,10 +45,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     fetchUser();
   }, []);
 
-  function logout() {
+  // 🔹 Logout centralizado
+  function logout(redirect = true) {
     fetch("/api/auth/logout", { method: "POST" }).finally(() => {
       setUser(null); // limpa estado do React
-      window.location.href = "/admin/login"; // força reload → middleware bloqueia admin
+      if (redirect) window.location.href = "/admin/login"; // só redireciona se for verdadeiro
     });
   }
 
