@@ -52,7 +52,7 @@ export async function POST() {
       path: "/",
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
-      expires: new Date(Date.now() + 15 * 60 * 1000),
+      expires: new Date(Date.now() + 5 * 60 * 1000),
     });
 
     return resp;

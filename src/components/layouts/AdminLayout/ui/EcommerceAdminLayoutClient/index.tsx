@@ -16,7 +16,6 @@ export default function EcommerceAdminLayoutClient({ children, logo }: Props) {
     <div className="min-h-screen flex flex-col">
       <AuthInterceptor />
 
-      {/* <RefreshTokenKeeper /> */}
       <Header logo={logo ?? undefined} />
       <main className="bg-grayscale-150">{children}</main>
       <Footer />

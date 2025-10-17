@@ -25,7 +25,7 @@ export function AuthInterceptor() {
       } catch (err) {
         console.error("Erro ao tentar atualizar token:", err);
       }
-    }, 10 * 60 * 1000);
+    }, 3 * 60 * 1000);
 
     // 🔹 Intercepta fetch global para qualquer 401
     const originalFetch = window.fetch;
