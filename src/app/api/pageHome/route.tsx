@@ -1,9 +1,9 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth";
 import { mapHome } from "@/utils/mappers/mapHome";
 import { RawHome, PageHome } from "@/types/home";
+import { cookies } from "next/headers";
 
 const WP_URL = process.env.WOO_SITE_URL!;
 
@@ -14,11 +14,17 @@ interface GraphQLErrorItem {
   path?: string[];
   extensions?: Record<string, unknown>;
 }
+
 interface GraphQLResponse<T = unknown> {
   data?: T;
   errors?: GraphQLErrorItem[];
 }
+
 type AcfFields = Record<string, unknown>;
+
+interface UpdateACFResponse {
+  updateACFFields: { success: boolean };
+}
 
 // ========================
 // GET → página Home
@@ -145,24 +151,72 @@ export async function GET() {
   }
 }
 
-// ========================
-// POST → atualizar ACF
-// ========================
-interface UpdateACFResponse {
-  updateACFFields: { success: boolean };
+// ------------------------
+// Função para refresh do token
+// ------------------------
+async function refreshToken(): Promise<void> {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/refresh`, {
+    method: "POST",
+  });
 }
 
+// ------------------------
+// Função fetch com token e retry
+// ------------------------
+async function fetchWithToken<T>(
+  query: string,
+  variables: unknown
+): Promise<GraphQLResponse<T>> {
+  const cookieStore = await cookies();
+  let token = cookieStore.get("token")?.value;
+
+  if (!token) throw new Error("Não autenticado");
+
+  const res = await fetch(`${WP_URL}/graphql`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const result: GraphQLResponse<T> = await res.json();
+
+  // Se token expirou → refresh e retry
+  if (result.errors?.some((e) => e.message.includes("Expired token"))) {
+    await refreshToken();
+    token = (await cookies()).get("token")?.value;
+
+    const retryRes = await fetch(`${WP_URL}/graphql`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    return await retryRes.json();
+  }
+
+  return result;
+}
+
+// ------------------------
+// POST → atualizar ACF
+// ------------------------
 export async function POST(req: Request) {
   try {
-    // ✅ Verifica autenticação e atualiza token se necessário
-    const user = await getAuthUser();
-
-    if (!user || !user.token) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-
     const { pageId, acfFields }: { pageId: number; acfFields: AcfFields } =
       await req.json();
+
+    if (!pageId || !acfFields) {
+      return NextResponse.json(
+        { error: "pageId ou acfFields não informados" },
+        { status: 400 }
+      );
+    }
 
     const mutation = `
       mutation UpdateAnyACF($input: UpdateACFFieldsInput!) {
@@ -179,33 +233,18 @@ export async function POST(req: Request) {
       },
     };
 
-    const res = await fetch(`${WP_URL}/graphql`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`, // ✅ usa token atualizado
-      },
-      body: JSON.stringify({ query: mutation, variables }),
-    });
+    const result = await fetchWithToken<UpdateACFResponse>(mutation, variables);
 
-    const result: GraphQLResponse<UpdateACFResponse> = await res.json();
-
-    if (!res.ok || result.errors?.length) {
+    if (result.errors?.length) {
       return NextResponse.json(
-        {
-          error:
-            result.errors?.map((e) => e.message).join(", ") || "Erro ao salvar",
-        },
+        { error: result.errors.map((e) => e.message).join(", ") },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("Erro em /api/pageHome POST:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Erro interno" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro interno";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
