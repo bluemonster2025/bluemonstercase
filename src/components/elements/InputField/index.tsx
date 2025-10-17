@@ -42,14 +42,14 @@ export default function InputField({
   rows = 4,
 }: InputFieldProps) {
   const baseClasses = `
-    w-full rounded border p-4 outline-none transition-all
+    w-full rounded border outline-none transition-all
     ${error ? "border-redscale-100" : "border-grayscale-100"}
     ${disabled ? "opacity-60 cursor-not-allowed" : ""}
     ${className}
   `;
 
   return (
-    <div className="flex flex-col gap-1 mb-4 w-full">
+    <div className="flex flex-col gap-1 mb-2 w-full">
       {label && <Text className="text-grayscale-550">{label}</Text>}
 
       {textarea ? (

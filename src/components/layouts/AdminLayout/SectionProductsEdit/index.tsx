@@ -72,40 +72,29 @@ export default function SectionProductsEdit({
 
   return (
     <Section className="flex flex-col gap-4 pb-12">
-      <div className="flex items-center justify-between gap-2 mb-1">
-        <InputField
-          className={`text-lg md:text-[22px] font-semibold w-[90%] ${
-            isEditingTitle ? "bg-white" : "border-none bg-transparent"
-          } focus:outline-none p-1 ${
-            !isEditingTitle ? "cursor-not-allowed text-grayscale-300" : ""
-          }`}
-          placeholder="Título da sessão"
-          value={localTitle}
-          disabled={!isEditingTitle}
-          onChange={(val) => {
-            setLocalTitle(val);
-            onTitleChange?.(val);
-          }}
-        />
-
-        {/* Botão para habilitar edição */}
-        {/* <button
-          type="button"
-          onClick={() => setIsEditingTitle(!isEditingTitle)}
-          className="bg-white w-[180px] text-black text-sm flex justify-center border border-grayscale-100 items-center cursor-pointer px-4 h-8 rounded font-bold"
+      <div className="w-fit">
+        <ButtonPrimary
+          className="h-6 rounded font-bold"
+          onClick={() => setIsEditingTitle((prev) => !prev)}
         >
           {isEditingTitle ? "Concluir edição" : "Editar título"}
-        </button> */}
-
-        <div className="w-fit">
-          <ButtonPrimary
-            className="h-6 rounded font-bold"
-            onClick={() => setIsEditingTitle((prev) => !prev)}
-          >
-            {isEditingTitle ? "Concluir edição" : "Editar título"}
-          </ButtonPrimary>
-        </div>
+        </ButtonPrimary>
       </div>
+
+      <InputField
+        className={`text-lg md:text-[22px] font-semibold w-full p-1 ${
+          isEditingTitle ? "bg-white mt-2" : "border-none bg-transparent"
+        } focus:outline-none ${
+          !isEditingTitle ? "cursor-not-allowed text-grayscale-300" : ""
+        }`}
+        placeholder="Título da sessão"
+        value={localTitle}
+        disabled={!isEditingTitle}
+        onChange={(val) => {
+          setLocalTitle(val);
+          onTitleChange?.(val);
+        }}
+      />
 
       <Text className="mb-8">
         Altere os produtos que vão aparecer nessa sessão da página inicial do
