@@ -1,4 +1,3 @@
-import { AuthProvider } from "@/context/AuthContext";
 import { ReactNode } from "react";
 import { SiteSettings } from "@/types/siteSettings";
 import { getSiteSettings } from "@/lib/siteSettings";
@@ -12,10 +11,8 @@ export default async function AdminLayout({ children }: Props) {
   const settings: SiteSettings | null = await getSiteSettings();
 
   return (
-    <AuthProvider>
-      <EcommerceAdminLayoutClient logo={settings?.logo}>
-        {children}
-      </EcommerceAdminLayoutClient>
-    </AuthProvider>
+    <EcommerceAdminLayoutClient logo={settings?.logo}>
+      {children}
+    </EcommerceAdminLayoutClient>
   );
 }

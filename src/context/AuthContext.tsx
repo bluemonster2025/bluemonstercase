@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 interface User {
   id: string;
@@ -10,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  logout: () => void;
+  logout: (redirect?: boolean) => void;
   fetchUser: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
@@ -20,8 +21,9 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
-  // 🔹 Busca usuário logado
+  // 🔹 Busca usuário logado (só em páginas que não são de login)
   async function fetchUser() {
     try {
       const res = await fetch("/api/auth/me", {
@@ -42,14 +44,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
+    // Evita buscar usuário em /admin/login
+    if (pathname === "/admin/login") {
+      setLoading(false);
+      return;
+    }
+
     fetchUser();
-  }, []);
+  }, [pathname]);
 
   // 🔹 Logout centralizado
   function logout(redirect = true) {
     fetch("/api/auth/logout", { method: "POST" }).finally(() => {
-      setUser(null); // limpa estado do React
-      if (redirect) window.location.href = "/admin/login"; // só redireciona se for verdadeiro
+      setUser(null);
+      if (redirect) window.location.href = "/admin/login";
     });
   }
 
