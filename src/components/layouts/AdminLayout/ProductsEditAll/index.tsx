@@ -58,7 +58,7 @@ export default function ProductsEditAll({
       {loading && products.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(skeletonCount)].map((_, i) => (
-            <div key={i} className="flex flex-col h-full">
+            <div key={i} className="flex flex-col h-full bg-white">
               <Skeleton className="w-full h-48 rounded-lg" />
               <div className="p-4 flex-1 flex flex-col gap-2">
                 <Skeleton className="h-5 w-3/4 rounded" />
@@ -73,7 +73,10 @@ export default function ProductsEditAll({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {filteredProducts.map((p) => (
-            <div key={p.id} className="flex flex-col h-full">
+            <div
+              key={p.id}
+              className="flex flex-col h-full bg-white p-4 rounded-2xl"
+            >
               <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
                 {p.tag && (
                   <div className="absolute top-0 right-0 flex gap-1 z-10">
@@ -95,7 +98,7 @@ export default function ProductsEditAll({
                 />
               </div>
 
-              <div className="p-4 flex-1 flex flex-col gap-2">
+              <div className="flex-1 flex flex-col gap-2">
                 <Title
                   as="h2"
                   className="font-semibold text-sm text-grayscale-400"

@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import SearchBar from "@/components/layouts/EcommerceLayout/Search/SearchBar";
-import { useCategories } from "@/hooks/useCategories";
-import { ButtonPrimary } from "@/components/elements/Button";
+import Filters from "@/components/layouts/AdminLayout/Filters";
 
 type ProductFilterProps = {
   search: string;
@@ -16,14 +15,13 @@ export default function ProductFilter({
   setSearch,
   onApplyFilter,
 }: ProductFilterProps) {
-  const { categories, loading: loadingCategories } = useCategories();
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   const handleApply = () => {
     if (onApplyFilter) {
       onApplyFilter({
         search,
-        categoryId: selectedCategory || undefined, // ⚠️ string
+        categoryId: selectedCategory || undefined,
       });
     }
   };
@@ -36,23 +34,11 @@ export default function ProductFilter({
         setSearch={setSearch}
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-end gap-4 flex-wrap">
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="border border-grayscale-200 rounded-lg px-4 py-2 text-sm"
-          disabled={loadingCategories}
-        >
-          <option value="">Todas as categorias</option>
-          {categories?.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-
-        <ButtonPrimary onClick={handleApply}>Aplicar filtro</ButtonPrimary>
-      </div>
+      <Filters
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        onApply={handleApply}
+      />
     </div>
   );
 }
