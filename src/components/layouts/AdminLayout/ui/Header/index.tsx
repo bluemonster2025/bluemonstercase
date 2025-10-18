@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/layouts/EcommerceLayout/ui/Logo";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { Section } from "@/components/elements/Section";
 
 interface Props {
@@ -22,14 +23,12 @@ export default function Header({ logo }: Props) {
   ];
 
   const handleLogout = () => {
-    logout(); // limpa cookie + estado do user
-    router.replace("/admin/login"); // redireciona para login
+    logout();
+    router.replace("/admin/login");
   };
 
-  // Logado → logo à esquerda, nome do usuário + botão sair à direita, menu abaixo
   return (
     <header className="w-full">
-      {/* Topo do Header */}
       <Section className="flex items-center max-h-[70px]">
         {user ? (
           <div className="flex justify-between w-full items-center">
@@ -48,7 +47,6 @@ export default function Header({ logo }: Props) {
         )}
       </Section>
 
-      {/* Menu abaixo do header (apenas logado) */}
       {user && (
         <Section className="border-t border-grayscale-200">
           <nav>
@@ -57,14 +55,14 @@ export default function Header({ logo }: Props) {
                 const isActive = pathname === item.path;
                 return (
                   <li key={item.path}>
-                    <button
-                      onClick={() => router.push(item.path)}
-                      className={`text-grayscale-450 cursor-pointer ${
+                    <Link
+                      href={item.path}
+                      className={`text-grayscale-450 hover:text-black transition-colors ${
                         isActive ? "font-semibold" : ""
                       }`}
                     >
                       {item.label}
-                    </button>
+                    </Link>
                   </li>
                 );
               })}

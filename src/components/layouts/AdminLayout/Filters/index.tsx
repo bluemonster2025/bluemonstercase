@@ -2,6 +2,8 @@
 
 import { useCategories } from "@/hooks/useCategories";
 import { ButtonPrimary } from "@/components/elements/Button";
+import InputField from "@/components/elements/InputField";
+import { Text } from "@/components/elements/Texts";
 
 type FiltersProps = {
   selectedCategory: string;
@@ -17,22 +19,29 @@ export default function Filters({
   const { categories, loading: loadingCategories } = useCategories();
 
   return (
-    <div className="mb-8 flex flex-col sm:flex-row sm:items-end gap-4 flex-wrap">
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        className="border border-grayscale-200 rounded-lg px-4 py-2 text-sm"
-        disabled={loadingCategories}
-      >
-        <option value="">Todas as categorias</option>
-        {categories?.map((cat) => (
-          <option key={cat.id} value={cat.id}>
-            {cat.name}
-          </option>
-        ))}
-      </select>
-
-      <ButtonPrimary onClick={onApply}>Aplicar filtro</ButtonPrimary>
+    <div className="flex items-center gap-4">
+      <Text className="text-grayscale-550">Filtros</Text>
+      <div className="flex-1 min-w-[200px]">
+        <InputField
+          select
+          className="p-[0.8rem] text-sm text-grayscale-550"
+          value={selectedCategory}
+          onChange={(value) => setSelectedCategory(value)}
+          disabled={loadingCategories}
+          options={[
+            { value: "", label: "Todas as categorias" },
+            ...(categories?.map((cat) => ({
+              value: String(cat.id),
+              label: cat.name,
+            })) ?? []),
+          ]}
+        />
+      </div>
+      <div className="w-fit">
+        <ButtonPrimary className="h-12 rounded font-semibold" onClick={onApply}>
+          Aplicar filtro
+        </ButtonPrimary>
+      </div>
     </div>
   );
 }

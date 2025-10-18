@@ -102,20 +102,31 @@ export default function RelatedProducts({
                         {item.name}
                       </Title>
 
-                      <Text className="text-grayscale-400 mt-2 flex items-baseline gap-1">
-                        {item.price !== undefined ? (
-                          <>
-                            <span className="text-xs font-medium">R$</span>
-                            <span className="text-[32px] font-bold">
-                              {new Intl.NumberFormat("pt-BR", {
+                      <Text className="text-grayscale-400 mt-2 flex gap-1 items-center">
+                        {item.price !== undefined
+                          ? (() => {
+                              const formatted = new Intl.NumberFormat("pt-BR", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
-                              }).format(parsePrice(item.price))}
-                            </span>
-                          </>
-                        ) : (
-                          "-"
-                        )}
+                              }).format(parsePrice(item.price)); // ex: "1234,50"
+
+                              const [inteiro, centavos] = formatted.split(","); // separa "1234" e "50"
+
+                              return (
+                                <>
+                                  <span className="text-xs font-medium">
+                                    R$
+                                  </span>
+                                  <span className="text-[32px] font-bold">
+                                    {inteiro}
+                                  </span>
+                                  <span className="text-xs font-medium">
+                                    ,{centavos}
+                                  </span>
+                                </>
+                              );
+                            })()
+                          : "-"}
                       </Text>
                     </div>
 

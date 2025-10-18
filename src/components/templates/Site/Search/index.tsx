@@ -57,11 +57,15 @@ export default function SearchTemplate() {
       </div>
 
       {/* Search Bar */}
-      <SearchBar
-        search={filters.search}
-        placeholder="o que você está buscando?"
-        setSearch={(value) => setFilters({ search: value })}
-      />
+      <div className="mb-8">
+        <SearchBar
+          search={filters.search}
+          placeholder="o que você está buscando?"
+          setSearch={(value) => setFilters({ search: value })}
+          inputClassName="p-4 text-sm pr-10"
+          sizeIcon={18}
+        />
+      </div>
 
       {/* Filtros */}
       {filters.search && (

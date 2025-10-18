@@ -11,7 +11,7 @@ import { ButtonPrimary } from "@/components/elements/Button";
 
 type ProductsEditAllProps = {
   search: string;
-  categoryId?: string; // ⚠️ agora é string
+  categoryId?: string;
 };
 
 export default function ProductsEditAll({

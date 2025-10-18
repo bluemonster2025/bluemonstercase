@@ -1,29 +1,35 @@
 "use client";
 
 import Icon from "@/components/elements/Icon";
+import InputField from "@/components/elements/InputField";
 
 type SearchBarProps = {
   search: string;
   placeholder: string;
   setSearch: (value: string) => void;
+  inputClassName?: string;
+  sizeIcon: number;
 };
 
 export default function SearchBar({
   search,
   placeholder,
   setSearch,
+  inputClassName,
+  sizeIcon,
 }: SearchBarProps) {
   return (
-    <div className="flex gap-2 w-full border border-grayscale-100 rounded-lg p-4 outline-none justify-between mb-8">
-      <input
+    <div className="relative max-h-fit">
+      <InputField
         type="text"
         placeholder={placeholder}
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="outline-none w-full placeholder-grayscale-300 text-sm"
+        onChange={(value) => setSearch(value)}
+        className={`${inputClassName} pr-10`} // espaço para o ícone
       />
-      <span className="px-3">
-        <Icon name="CiSearch" color="#272934" size={16} />
+
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-grayscale-400">
+        <Icon name="CiSearch" color="#272934" size={sizeIcon} />
       </span>
     </div>
   );

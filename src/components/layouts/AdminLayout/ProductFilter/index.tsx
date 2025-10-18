@@ -27,11 +27,13 @@ export default function ProductFilter({
   };
 
   return (
-    <div className="mb-8 flex flex-col gap-4">
+    <div className="mb-8 flex justify-between">
       <SearchBar
         placeholder="Buscar..."
         search={search}
         setSearch={setSearch}
+        inputClassName="p-[0.8rem] text-base pr-8"
+        sizeIcon={16}
       />
 
       <Filters
