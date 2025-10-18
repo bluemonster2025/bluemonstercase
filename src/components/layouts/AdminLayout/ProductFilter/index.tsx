@@ -1,81 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useProducts } from "@/hooks/useProducts";
+import { useState } from "react";
+import SearchBar from "@/components/layouts/EcommerceLayout/Search/SearchBar";
 import { useCategories } from "@/hooks/useCategories";
+import { ButtonPrimary } from "@/components/elements/Button";
 
-export default function ProductFilter() {
-  const {
-    filters,
-    setFilters,
-    fetchProducts,
-    loading: loadingProducts,
-  } = useProducts();
+type ProductFilterProps = {
+  search: string;
+  setSearch: (value: string) => void;
+  onApplyFilter?: (filters: { search: string; categoryId?: string }) => void;
+};
+
+export default function ProductFilter({
+  search,
+  setSearch,
+  onApplyFilter,
+}: ProductFilterProps) {
   const { categories, loading: loadingCategories } = useCategories();
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  const [search, setSearch] = useState(filters.search);
-  const [categoryId, setCategoryId] = useState<number | undefined>(
-    filters.categoryId
-  );
-
-  const handleApplyFilters = () => {
-    setFilters({
-      search: search.trim(),
-      categoryId,
-    });
-    fetchProducts(); // recarrega os produtos com os filtros aplicados
+  const handleApply = () => {
+    if (onApplyFilter) {
+      onApplyFilter({
+        search,
+        categoryId: selectedCategory || undefined, // ⚠️ string
+      });
+    }
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-end mb-6">
-      {/* Input de busca */}
-      <div className="flex-1">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Buscar produto
-        </label>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Digite o nome do produto..."
-          className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+    <div className="mb-8 flex flex-col gap-4">
+      <SearchBar
+        placeholder="Buscar..."
+        search={search}
+        setSearch={setSearch}
+      />
 
-      {/* Select de categoria */}
-      <div className="flex-1">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Categoria
-        </label>
-        {loadingCategories ? (
-          <p>Carregando categorias...</p>
-        ) : (
-          <select
-            value={categoryId || ""}
-            onChange={(e) =>
-              setCategoryId(e.target.value ? Number(e.target.value) : undefined)
-            }
-            className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todas as categorias</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      {/* Botão aplicar filtro */}
-      <div>
-        <button
-          onClick={handleApplyFilters}
-          disabled={loadingProducts || loadingCategories}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+      <div className="flex flex-col sm:flex-row sm:items-end gap-4 flex-wrap">
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="border border-grayscale-200 rounded-lg px-4 py-2 text-sm"
+          disabled={loadingCategories}
         >
-          {loadingProducts ? "Carregando..." : "Aplicar filtro"}
-        </button>
+          <option value="">Todas as categorias</option>
+          {categories?.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+
+        <ButtonPrimary onClick={handleApply}>Aplicar filtro</ButtonPrimary>
       </div>
     </div>
   );

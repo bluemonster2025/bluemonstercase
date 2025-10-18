@@ -4,15 +4,20 @@ import Icon from "@/components/elements/Icon";
 
 type SearchBarProps = {
   search: string;
+  placeholder: string;
   setSearch: (value: string) => void;
 };
 
-export default function SearchBar({ search, setSearch }: SearchBarProps) {
+export default function SearchBar({
+  search,
+  placeholder,
+  setSearch,
+}: SearchBarProps) {
   return (
     <div className="flex gap-2 w-full border border-grayscale-100 rounded-lg p-4 outline-none justify-between mb-8">
       <input
         type="text"
-        placeholder="o que você está buscando?"
+        placeholder={placeholder}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="outline-none w-full placeholder-grayscale-300 text-sm"

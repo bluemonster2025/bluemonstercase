@@ -46,7 +46,7 @@ export async function POST() {
 
     const resp = NextResponse.json({ success: true });
 
-    // 🔐 Novo token curto (30 min)
+    // 🔐 Novo token curto (5 min)
     resp.cookies.set("token", newToken, {
       httpOnly: true,
       path: "/",

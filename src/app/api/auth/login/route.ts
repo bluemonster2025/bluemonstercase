@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
     const res = NextResponse.json({ success: true, user: login.user });
 
-    // 🔐 Token curto — expira em 30 minutos
+    // 🔐 Token curto — expira em 5 minutos
     res.cookies.set("token", login.authToken, {
       httpOnly: true,
       path: "/",

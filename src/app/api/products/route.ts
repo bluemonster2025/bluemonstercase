@@ -21,66 +21,87 @@ export async function GET(req: NextRequest) {
 
   const query = `
     query Products(
-      $search: String
-      $categoryId: Int
-      $minPrice: Float
-      $maxPrice: Float
-      $order: OrderEnum
-      $after: String
-    ) {
-      products(
-        first: 50
-        after: $after
-        where: {
-          search: $search
-          categoryId: $categoryId
-          minPrice: $minPrice
-          maxPrice: $maxPrice
-          orderby: { field: PRICE, order: $order }
+  $search: String
+  $categoryId: Int
+  $minPrice: Float
+  $maxPrice: Float
+  $order: OrderEnum
+  $after: String
+) {
+  products(
+    first: 50
+    after: $after
+    where: {
+      search: $search
+      categoryId: $categoryId
+      minPrice: $minPrice
+      maxPrice: $maxPrice
+      orderby: { field: PRICE, order: $order }
+    }
+  ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      ... on SimpleProduct {
+        id
+        name
+        slug
+        productCategories {
+          nodes {
+            id
+            name
+            slug
+          }
         }
-      ) {
-        pageInfo {
-          hasNextPage
-          endCursor
+        productTags {
+          nodes {
+            name
+          }
         }
-        nodes {
-          id
-          name
-          slug
-          ... on SimpleProduct {
-            productTags {
-              nodes {
-                name
-              }
-            }
-            ... on ProductWithPricing {
-              price
-              regularPrice
-              salePrice
-            }
-          }
-          ... on VariableProduct {
-            productTags {
-              nodes {
-                name
-              }
-            }
-            ... on ProductWithPricing {
-              price
-              regularPrice
-              salePrice
-            }
-          }
-          ... on UniformResourceIdentifiable {
-            uri
-          }
-          image {
-            sourceUrl
-            altText
-          }
+        ... on ProductWithPricing {
+          price
+          regularPrice
+          salePrice
         }
       }
+
+      ... on VariableProduct {
+        id
+        name
+        slug
+        productCategories {
+          nodes {
+            id
+            name
+            slug
+          }
+        }
+        productTags {
+          nodes {
+            name
+          }
+        }
+        ... on ProductWithPricing {
+          price
+          regularPrice
+          salePrice
+        }
+      }
+
+      ... on UniformResourceIdentifiable {
+        uri
+      }
+
+      image {
+        sourceUrl
+        altText
+      }
     }
+  }
+}
+
   `;
 
   try {

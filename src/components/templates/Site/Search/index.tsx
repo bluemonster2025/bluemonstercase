@@ -59,6 +59,7 @@ export default function SearchTemplate() {
       {/* Search Bar */}
       <SearchBar
         search={filters.search}
+        placeholder="o que você está buscando?"
         setSearch={(value) => setFilters({ search: value })}
       />
 

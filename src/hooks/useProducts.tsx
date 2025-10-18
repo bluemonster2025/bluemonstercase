@@ -7,7 +7,7 @@ type Filters = {
   maxPrice: number;
   sort: "asc" | "desc" | "";
   per_page: number;
-  categoryId?: number;
+  categoryId?: string; // ⚠️ string para base64
 };
 
 const defaultFilters: Filters = {
@@ -42,43 +42,31 @@ export const useProducts = () => {
         params.set("per_page", filters.per_page.toString());
         params.set(
           "page",
-          append ? Math.floor(products.length / filters.per_page) + 1 + "" : "1"
+          append
+            ? Math.floor(products.length / filters.per_page + 1).toString()
+            : "1"
         );
 
         if (filters.search) params.set("search", filters.search);
         if (filters.minPrice > 0)
-          params.set("min_price", filters.minPrice.toString());
+          params.set("minPrice", filters.minPrice.toString());
         if (filters.maxPrice > 0)
-          params.set("max_price", filters.maxPrice.toString());
-        if (filters.sort) {
-          params.set("orderby", "price");
-          params.set("order", filters.sort);
-        }
-        if (filters.categoryId)
-          params.set("category", filters.categoryId.toString());
+          params.set("maxPrice", filters.maxPrice.toString());
+        if (filters.sort) params.set("sort", filters.sort);
+        if (filters.categoryId) params.set("categoryId", filters.categoryId);
 
-        const res = await fetch(
-          `/api/products?search=${filters.search}&categoryId=${filters.categoryId}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}&sort=${filters.sort}`,
-          { cache: "no-store" }
-        );
+        const res = await fetch(`/api/products?${params.toString()}`, {
+          cache: "no-store",
+          signal: abortController.current.signal,
+        });
 
         if (!res.ok) throw new Error("Erro ao buscar produtos");
 
         const data: Product[] = await res.json();
-
-        const productsWithPrice = (data || []).map((p) => ({
-          ...p,
-          price: p.price,
-        }));
-
-        setProducts((prev) =>
-          append ? [...prev, ...productsWithPrice] : productsWithPrice
-        );
+        setProducts((prev) => (append ? [...prev, ...data] : data));
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          if (err.name !== "AbortError") setError(err.message);
-        } else {
-          setError("Erro desconhecido ao buscar produtos");
+        if (err instanceof Error && err.name !== "AbortError") {
+          setError(err.message);
         }
       } finally {
         setLoading(false);
@@ -87,19 +75,10 @@ export const useProducts = () => {
     [filters, products.length]
   );
 
-  // efeito para search com debounce
+  // 🔹 Debounce apenas para search
   useEffect(() => {
-    if (!filters.search) return;
-
-    if (abortController.current) abortController.current.abort();
-    abortController.current = new AbortController();
-
-    if (filters.search.length === 1) {
-      fetchProducts();
-      return;
-    }
-
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
     debounceTimeout.current = setTimeout(() => {
       fetchProducts();
     }, 300);
@@ -107,12 +86,18 @@ export const useProducts = () => {
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-  }, [filters, fetchProducts]);
+  }, [filters.search, fetchProducts]);
 
-  // busca inicial
+  // 🔹 Fetch sempre que outros filtros mudarem (categoria, preço, sort)
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+  }, [
+    filters.categoryId,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.sort,
+    fetchProducts,
+  ]);
 
   return { products, loading, filters, setFilters, fetchProducts, error };
 };
