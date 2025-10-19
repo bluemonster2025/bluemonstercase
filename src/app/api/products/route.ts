@@ -41,10 +41,36 @@ export async function GET(req: NextRequest) {
   let variables: ProductQueryVariables = {};
 
   try {
-    if (status !== "publish") {
+    /**
+     * ✅ Usa sempre `allProducts` quando há status (publish, any, draft, etc.)
+     * Assim a busca por categoria + status funciona corretamente
+     */
+    if (status) {
+      // Decodifica o categoryId base64 (ex: "dGVybToxOA==" → 18)
+      let decodedCategoryId: number | undefined = undefined;
+      if (categoryId) {
+        try {
+          const decoded = atob(categoryId); // "term:18"
+          const idPart = decoded.split(":")[1];
+          decodedCategoryId = idPart ? Number(idPart) : undefined;
+        } catch {
+          decodedCategoryId = Number(categoryId);
+        }
+      }
+
       query = `
-        query AllProducts($status: String!) {
-          allProducts(status: $status) {
+        query AllProducts(
+          $status: String!
+          $search: String
+          $limit: Int
+          $categoryId: Int
+        ) {
+          allProducts(
+            status: $status
+            search: $search
+            limit: $limit
+            categoryId: $categoryId
+          ) {
             id
             name
             slug
@@ -61,11 +87,32 @@ export async function GET(req: NextRequest) {
             productTags {
               name
             }
+            ... on SimpleProduct {
+              price
+              regularPrice
+              salePrice
+            }
+            ... on VariableProduct {
+              price
+              regularPrice
+              salePrice
+            }
           }
         }
       `;
-      variables = { status };
+
+      variables = {
+        status,
+        search,
+        categoryIn: decodedCategoryId ? [String(decodedCategoryId)] : undefined,
+        minPrice,
+        maxPrice,
+        order,
+      };
     } else {
+      /**
+       * 🔹 Fallback: caso sem status (comportamento antigo)
+       */
       query = `
         query Products(
           $search: String
@@ -122,11 +169,11 @@ export async function GET(req: NextRequest) {
         }
       `;
 
-      // 🔹 WooGraphQL espera ID numérico, não Base64
+      // Decodifica categoria
       let decodedCategoryId: number | undefined = undefined;
       if (categoryId) {
         try {
-          const decoded = atob(categoryId); // Ex: "term:18"
+          const decoded = atob(categoryId); // "term:18"
           const idPart = decoded.split(":")[1];
           decodedCategoryId = idPart ? Number(idPart) : undefined;
         } catch {
@@ -136,7 +183,7 @@ export async function GET(req: NextRequest) {
 
       variables = {
         search,
-        categoryIn: decodedCategoryId ? [String(decodedCategoryId)] : undefined, // ✅ converte para string
+        categoryIn: decodedCategoryId ? [String(decodedCategoryId)] : undefined,
         minPrice,
         maxPrice,
         order,
@@ -146,7 +193,16 @@ export async function GET(req: NextRequest) {
     const res = await fetch(`${WP_URL}/graphql`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, variables }),
+      body: JSON.stringify({
+        query,
+        variables: {
+          ...variables,
+          limit: 50,
+          categoryId: variables.categoryIn
+            ? Number(variables.categoryIn[0])
+            : undefined,
+        },
+      }),
       cache: "no-store",
     });
 
