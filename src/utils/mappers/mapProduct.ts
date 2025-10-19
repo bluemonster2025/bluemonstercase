@@ -39,9 +39,9 @@ interface RawRelatedProduct {
   name: string;
   price?: string;
   image?: RawImage;
-  type: "simple" | "variable" | "external" | "group";
+  type?: "simple" | "variable" | "external" | "group";
   slug: string;
-  productTags?: { nodes: RawTag[] }; // ✅ adicionado aqui
+  productTags?: { nodes?: RawTag[] } | RawTag[];
 }
 
 interface RawProduct {
@@ -53,13 +53,14 @@ interface RawProduct {
   slug?: string;
   price?: string;
   image?: RawImage;
-  galleryImages?: { nodes: RawImage[] };
-  variations?: { nodes: RawVariation[] };
-  productCategories?: { nodes: RawCategory[] };
-  productTags?: { nodes: RawTag[] };
-  crossSell?: { nodes: RawRelatedProduct[] };
-  upsell?: { nodes: RawRelatedProduct[] };
-  related?: { nodes: RawRelatedProduct[] };
+  galleryImages?: { nodes?: RawImage[] };
+  variations?: { nodes?: RawVariation[] };
+  productCategories?: { nodes?: RawCategory[] };
+  productTags?: { nodes?: RawTag[] };
+  crossSell?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[];
+  upsell?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[];
+  related?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[];
+  status?: "publish" | "draft" | "pending" | "private" | string;
 }
 
 // Função que mapeia o produto do GraphQL para nosso tipo Product
@@ -109,8 +110,13 @@ export function mapProduct(raw: RawProduct): Product {
     })
   );
 
-  const mapRelated = (nodes?: RawRelatedProduct[]): RelatedProductNode[] =>
-    nodes?.map((p) => ({
+  // 🔹 Função segura para mapear produtos relacionados (crossSell, upsell)
+  const mapRelated = (
+    input?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[]
+  ): RelatedProductNode[] => {
+    const nodesArray = Array.isArray(input) ? input : input?.nodes ?? [];
+
+    return nodesArray.map((p) => ({
       id: p.id,
       name: p.name,
       price: p.price ?? "0",
@@ -118,11 +124,14 @@ export function mapProduct(raw: RawProduct): Product {
       image: p.image
         ? { sourceUrl: p.image.sourceUrl, altText: p.image.altText || p.name }
         : undefined,
-      type: p.type,
-      tags: p.productTags?.nodes.map((t) => t.name) || [], // tags existentes
-      customTag: "", // inicializa tag editável
-      visible: true, // inicializa visibilidade como true
-    })) || [];
+      type: p.type ?? "simple",
+      tags: Array.isArray(p.productTags)
+        ? (p.productTags as RawTag[]).map((t) => t.name)
+        : p.productTags?.nodes?.map((t) => t.name) || [],
+      customTag: "",
+      visible: true,
+    }));
+  };
 
   return {
     id: raw.id,
@@ -138,10 +147,9 @@ export function mapProduct(raw: RawProduct): Product {
       ? { nodes: productCategories }
       : undefined,
     variations: variations ? { nodes: variations } : undefined,
-    crossSell: raw.crossSell
-      ? { nodes: mapRelated(raw.crossSell.nodes) }
-      : undefined,
-    upsell: raw.upsell ? { nodes: mapRelated(raw.upsell.nodes) } : undefined,
+    crossSell: { nodes: mapRelated(raw.crossSell) },
+    upsell: { nodes: mapRelated(raw.upsell) },
     tag: raw.productTags?.nodes?.[0]?.name || "",
+    status: raw.status || "publish",
   };
 }

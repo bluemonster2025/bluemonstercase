@@ -7,7 +7,11 @@ import Filters from "@/components/layouts/AdminLayout/Filters";
 type ProductFilterProps = {
   search: string;
   setSearch: (value: string) => void;
-  onApplyFilter?: (filters: { search: string; categoryId?: string }) => void;
+  onApplyFilter?: (filters: {
+    search: string;
+    categoryId?: string;
+    status?: string; // ✅ inclui status no tipo
+  }) => void;
 };
 
 export default function ProductFilter({
@@ -17,17 +21,20 @@ export default function ProductFilter({
 }: ProductFilterProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  const handleApply = () => {
+  // 🔹 Recebe filtros de categoria + status do componente Filters
+  const handleApply = (filters: { categoryId?: string; status?: string }) => {
     if (onApplyFilter) {
       onApplyFilter({
         search,
-        categoryId: selectedCategory || undefined,
+        categoryId: filters.categoryId || undefined,
+        status: filters.status || "publish",
       });
     }
   };
 
   return (
-    <div className="mb-8 flex justify-between">
+    <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      {/* 🔍 Campo de busca */}
       <SearchBar
         placeholder="Buscar..."
         search={search}
@@ -36,6 +43,7 @@ export default function ProductFilter({
         sizeIcon={16}
       />
 
+      {/* 🔽 Filtros (categoria + status) */}
       <Filters
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}

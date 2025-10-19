@@ -6,9 +6,9 @@ const WP_URL = process.env.WOO_SITE_URL!;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> } // ⚡ Next.js App Router
+  { params }: { params: { slug: string } }
 ) {
-  const { slug } = await params;
+  const { slug } = params;
 
   try {
     // 1️⃣ Buscar categoria pelo slug
@@ -61,21 +61,35 @@ export async function GET(
       );
     }
 
-    // 2️⃣ Buscar produtos da categoria
+    // 🧩 ID numérico da categoria (necessário pro allProducts)
+    const categoryId = Number(rawCategory.databaseId);
+    if (!categoryId) {
+      return NextResponse.json(
+        { error: "ID da categoria inválido" },
+        { status: 400 }
+      );
+    }
+
+    // 2️⃣ Buscar produtos da categoria — apenas publicados
     const productsQuery = `
-      query ProductsByCategory($categoryId: Int!) {
-        products(where: { categoryId: $categoryId }, first: 50) {
-          nodes {
-            id
-            databaseId
-            name
-            slug
-            description
-            image { sourceUrl altText }
-            ... on SimpleProduct { id name price slug image { sourceUrl altText } productTags { nodes { name } } }
-            ... on VariableProduct { id name price slug image { sourceUrl altText } productTags { nodes { name } } }
-            ... on ExternalProduct { id name price slug image { sourceUrl altText } productTags { nodes { name } } }
-            ... on GroupProduct { id name price slug image { sourceUrl altText } productTags { nodes { name } } }
+      query ProductsByCategory($categoryId: Int!, $status: String!) {
+        allProducts(status: $status, categoryId: $categoryId) {
+          id
+          name
+          slug
+          status
+          image { sourceUrl altText }
+          productCategories { id name slug }
+          productTags { name }
+          ... on SimpleProduct {
+            price
+            regularPrice
+            salePrice
+          }
+          ... on VariableProduct {
+            price
+            regularPrice
+            salePrice
           }
         }
       }
@@ -86,7 +100,10 @@ export async function GET(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: productsQuery,
-        variables: { categoryId: rawCategory.databaseId },
+        variables: {
+          categoryId,
+          status: "publish",
+        },
       }),
       cache: "no-store",
     });
@@ -99,14 +116,14 @@ export async function GET(
     }
 
     const productsData = await productsRes.json();
-    const products = productsData?.data?.products?.nodes?.map(mapProduct) || [];
+    const products = productsData?.data?.allProducts?.map(mapProduct) || [];
 
     return NextResponse.json({
       category: mapCategory(rawCategory),
       products,
     });
   } catch (err) {
-    console.error(err);
+    console.error("💥 Erro interno:", err);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

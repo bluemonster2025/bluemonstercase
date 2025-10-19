@@ -15,78 +15,79 @@ export async function GET(
   const { slug } = await params;
 
   const query = `query ProductBySlug($slug: ID!) {
-    product(id: $slug, idType: SLUG) {
-      id
-      name
-      description
-      shortDescription
-      purchaseNote
-    	slug
-      image {
+  product(id: $slug, idType: SLUG) {
+    id
+    name
+    description
+    shortDescription
+    purchaseNote
+    slug
+    image {
+      sourceUrl
+      altText
+    }
+    galleryImages {
+      nodes {
         sourceUrl
         altText
       }
-      galleryImages {
+    }
+    ... on SimpleProduct {
+      price
+      purchaseNote
+      crossSell {
         nodes {
-          sourceUrl
-          altText
+          ... on SimpleProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on VariableProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on ExternalProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on GroupProduct { id slug name price productTags { name } image { sourceUrl altText } }
         }
       }
-      ... on SimpleProduct {
-        price
-        purchaseNote
-        crossSell {
-          nodes {
-            ... on SimpleProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on VariableProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on ExternalProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on GroupProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-          }
+      upsell {
+        nodes {
+          ... on SimpleProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on VariableProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on ExternalProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on GroupProduct { id slug name price productTags { name } image { sourceUrl altText } }
         }
-        upsell {
-          nodes {
-            ... on SimpleProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on VariableProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on ExternalProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on GroupProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-          }
-        }
-      }
-      ... on VariableProduct {
-        price
-        purchaseNote
-        variations {
-          nodes {
-            id
-            name
-            price
-            purchaseNote
-            image { sourceUrl altText }
-            attributes { nodes { attributeId name value } }
-          }
-        }
-        crossSell {
-          nodes {
-            ... on SimpleProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on VariableProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on ExternalProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on GroupProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-          }
-        }
-        upsell {
-          nodes {
-            ... on SimpleProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on VariableProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on ExternalProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-            ... on GroupProduct { id slug name price productTags {nodes{name}} image { sourceUrl altText } }
-          }
-        }
-      }
-      productCategories {
-        nodes { id name slug }
       }
     }
-  }`;
+    ... on VariableProduct {
+      price
+      purchaseNote
+      variations {
+        nodes {
+          id
+          name
+          price
+          purchaseNote
+          image { sourceUrl altText }
+          attributes { nodes { attributeId name value } }
+        }
+      }
+      crossSell {
+        nodes {
+          ... on SimpleProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on VariableProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on ExternalProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on GroupProduct { id slug name price productTags { name } image { sourceUrl altText } }
+        }
+      }
+      upsell {
+        nodes {
+          ... on SimpleProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on VariableProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on ExternalProduct { id slug name price productTags { name } image { sourceUrl altText } }
+          ... on GroupProduct { id slug name price productTags { name } image { sourceUrl altText } }
+        }
+      }
+    }
+    productCategories {
+      nodes { id name slug }
+    }
+  }
+}
+`;
 
   try {
     const res = await fetch(`${WP_URL}/graphql`, {

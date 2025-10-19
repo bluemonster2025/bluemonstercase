@@ -1,5 +1,3 @@
-// src/types/product.ts
-
 // --- Tipos finais usados no frontend ---
 export interface ImageNode {
   sourceUrl: string;
@@ -34,11 +32,12 @@ export type RelatedProductNode = {
   price: string;
   image?: ImageNode;
   slug?: string;
-  tags?: string[]; // <- agora pode ter múltiplas tags
-  customTag?: string; // ← tag editável pelo front
-  visible?: boolean; // ← checkbox de visibilidade
+  tags?: string[]; // múltiplas tags
+  customTag?: string; // tag editável pelo front
+  visible?: boolean; // checkbox de visibilidade
 };
 
+// ✅ Adicionamos `status` aqui (para uso geral)
 export interface Product {
   id: string;
   name: string;
@@ -56,13 +55,15 @@ export interface Product {
   crossSell?: { nodes: RelatedProductNode[] };
   upsell?: { nodes: RelatedProductNode[] };
   tag?: string;
+  /** 🔥 status do produto */
+  status?: "publish" | "draft" | "pending" | "private" | "any" | string;
 }
 
 export type ProductCardProps = {
   produto: Product;
 };
 
-// Tipos crus (da API)
+// --- Tipos crus (da API) ---
 export interface RawRelatedProduct {
   id: string;
   name: string;
@@ -93,8 +94,11 @@ export interface RawProduct {
   upsell?: { nodes: RawRelatedProduct[] };
   related?: { nodes: RawRelatedProduct[] };
   productTags?: { nodes: RawTag[] };
+  /** 🔥 status vindo do GraphQL */
+  status?: "publish" | "draft" | "pending" | "private" | "any" | string;
 }
 
+// --- Botão comprar ---
 export type BuyButtonProps = {
   produto?: Product;
   title: string;

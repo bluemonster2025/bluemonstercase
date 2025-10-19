@@ -67,12 +67,18 @@ export default function ProductCard({
           </Title>
 
           <Text className="text-grayscale-400 mt-2 flex gap-1 items-center">
-            {produto.price !== undefined
+            {produto.price !== undefined && produto.price !== null
               ? (() => {
+                  // 🔹 parsePrice já está correto globalmente, mas aqui o valor vem em centavos da API "allProducts"
+                  const precoCorrigido =
+                    parsePrice(produto.price) > 999
+                      ? parsePrice(produto.price) / 100
+                      : parsePrice(produto.price);
+
                   const formatted = new Intl.NumberFormat("pt-BR", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  }).format(parsePrice(produto.price));
+                  }).format(precoCorrigido);
 
                   const [inteiro, centavos] = formatted.split(",");
 

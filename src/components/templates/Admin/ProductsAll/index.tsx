@@ -8,20 +8,28 @@ import { useState } from "react";
 import { useProducts } from "@/hooks/useProducts";
 
 export default function ProductsAllEditorTemplate() {
-  const { setFilters } = useProducts();
+  // ✅ Um único hook de produtos
+  const { products, loading, setFilters } = useProducts();
+
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string | undefined>();
+  const [status, setStatus] = useState<string>("publish");
 
+  // 🔍 Atualiza filtros globais
   const handleApplyFilter = (filters: {
     search: string;
     categoryId?: string;
+    status?: string;
   }) => {
+    console.log("📥 Aplicando filtros:", filters);
     setSearch(filters.search);
     setCategoryId(filters.categoryId);
+    setStatus(filters.status || "publish");
 
     setFilters({
       search: filters.search,
       categoryId: filters.categoryId,
+      status: filters.status || "publish",
     });
   };
 
@@ -37,7 +45,14 @@ export default function ProductsAllEditorTemplate() {
         onApplyFilter={handleApplyFilter}
       />
 
-      <ProductsEditAll search={search} categoryId={categoryId} />
+      {/* ✅ Agora ProductsEditAll recebe produtos e loading corretos */}
+      <ProductsEditAll
+        products={products}
+        loading={loading}
+        search={search}
+        categoryId={categoryId}
+        status={status}
+      />
     </Section>
   );
 }

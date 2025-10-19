@@ -1,51 +1,111 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Image from "next/image";
-import { useProducts } from "@/hooks/useProducts";
 import { Section } from "@/components/elements/Section";
 import { Skeleton } from "@/components/elements/Skeleton";
 import { Title, Text } from "@/components/elements/Texts";
 import { parsePrice } from "@/utils/parsePrice";
 import { ButtonPrimary } from "@/components/elements/Button";
+import type { Product } from "@/types/product";
+
+type CategoryNode = {
+  id: string;
+  name: string;
+  slug?: string;
+};
 
 type ProductsEditAllProps = {
+  products: Product[];
+  loading: boolean;
   search: string;
   categoryId?: string;
+  status?: string;
 };
 
 export default function ProductsEditAll({
+  products,
+  loading,
   search,
   categoryId,
+  status = "publish",
 }: ProductsEditAllProps) {
-  const { products, loading } = useProducts();
   const skeletonCount = 4;
+
+  // 🧠 Função segura de decodificação Base64 → texto
+  const decodeBase64Safe = (str: string) => {
+    try {
+      return atob(str);
+    } catch {
+      return str;
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      // 🔍 Filtro por busca
       const matchesSearch =
         !search ||
         p.name?.toLowerCase().includes(search.toLowerCase()) ||
         p.tag?.toLowerCase().includes(search.toLowerCase());
 
-      const matchesCategory = !categoryId
-        ? true
-        : p.productCategories?.nodes?.some((cat) => cat.id === categoryId) ??
-          false;
+      // 🏷️ Categoria — compatível com GraphQL padrão e com allProducts
+      const decodedCategoryId = categoryId
+        ? decodeBase64Safe(categoryId)
+        : null;
 
-      console.log(
-        "Produto:",
-        p.name,
-        "Categorias:",
-        p.productCategories?.nodes,
-        "Matches:",
-        matchesCategory
-      );
+      let productCats: CategoryNode[] = [];
 
-      return matchesSearch && matchesCategory;
+      // ✅ Detecta formato: { nodes: [...] } ou [...]
+      if (Array.isArray(p.productCategories)) {
+        productCats = p.productCategories;
+      } else if (
+        p.productCategories &&
+        Array.isArray(p.productCategories.nodes)
+      ) {
+        productCats = p.productCategories.nodes;
+      }
+
+      const matchesCategory =
+        !categoryId ||
+        productCats.some((cat) => {
+          const catIdDecoded = decodeBase64Safe(cat.id);
+          return (
+            cat.id === categoryId ||
+            cat.id === decodedCategoryId ||
+            catIdDecoded === categoryId ||
+            catIdDecoded === decodedCategoryId
+          );
+        });
+
+      // ⚙️ Lógica de status
+      if (status === "any") {
+        if (categoryId) return matchesSearch && matchesCategory;
+        return matchesSearch;
+      }
+
+      const matchesStatus = p.status === status;
+      return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [products, search, categoryId]);
+  }, [products, search, categoryId, status]);
 
+  // 🧩 Log de diagnóstico
+  useEffect(() => {
+    console.log("🧩 Produtos recebidos no EditAll:", {
+      total: products.length,
+      sample: products.slice(0, 2).map((p) => ({
+        id: p.id,
+        status: p.status,
+        cats: Array.isArray(p.productCategories)
+          ? p.productCategories.map((c) => c.name)
+          : p.productCategories?.nodes?.map((c) => c.name),
+      })),
+      activeStatus: status,
+      activeCategory: categoryId,
+    });
+  }, [products, categoryId, status]);
+
+  // 💅 Render
   return (
     <Section>
       <Title as="h3" className="text-sm text-grayscale-550 mb-8">
@@ -56,6 +116,7 @@ export default function ProductsEditAll({
       </Title>
 
       {loading && products.length === 0 ? (
+        // 🔄 Skeletons enquanto carrega
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(skeletonCount)].map((_, i) => (
             <div key={i} className="flex flex-col h-full bg-white">
@@ -75,17 +136,31 @@ export default function ProductsEditAll({
           {filteredProducts.map((p) => (
             <div
               key={p.id}
-              className="flex flex-col h-full bg-white p-4 rounded-2xl"
+              className="relative flex flex-col h-full bg-white p-4 rounded-2xl shadow-sm border border-grayscale-200"
             >
-              <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
-                {p.tag && (
-                  <div className="absolute top-0 right-0 flex gap-1 z-10">
-                    <span className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10">
-                      {p.tag}
-                    </span>
-                  </div>
-                )}
+              {/* 🏷️ Tag de status */}
+              {p.status && (
+                <div className="absolute top-3 left-3 z-10">
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full text-white ${
+                      p.status === "publish"
+                        ? "bg-green-500"
+                        : p.status === "pending"
+                        ? "bg-yellow-500"
+                        : "bg-gray-500"
+                    }`}
+                  >
+                    {p.status === "publish"
+                      ? "Publicado"
+                      : p.status === "pending"
+                      ? "Pendente"
+                      : "Rascunho"}
+                  </span>
+                </div>
+              )}
 
+              {/* 📸 Imagem */}
+              <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden">
                 <Image
                   src={
                     p.image?.sourceUrl ||
@@ -98,7 +173,8 @@ export default function ProductsEditAll({
                 />
               </div>
 
-              <div className="flex-1 flex flex-col gap-2">
+              {/* 🧾 Conteúdo */}
+              <div className="flex-1 flex flex-col gap-2 mt-2">
                 <Title
                   as="h2"
                   className="font-semibold text-sm text-grayscale-400"

@@ -1,5 +1,5 @@
+import { Product } from "@/types/product";
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { Product } from "@/types/product";
 
 type Filters = {
   search: string;
@@ -7,7 +7,8 @@ type Filters = {
   maxPrice: number;
   sort: "asc" | "desc" | "";
   per_page: number;
-  categoryId?: string; // ⚠️ string para base64
+  categoryId?: string;
+  status?: string;
 };
 
 const defaultFilters: Filters = {
@@ -16,6 +17,7 @@ const defaultFilters: Filters = {
   maxPrice: 0,
   sort: "",
   per_page: 20,
+  status: "publish",
 };
 
 export const useProducts = () => {
@@ -24,80 +26,94 @@ export const useProducts = () => {
   const [filters, setFiltersState] = useState<Filters>(defaultFilters);
   const [error, setError] = useState<string | null>(null);
 
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const abortController = useRef<AbortController | null>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const firstRender = useRef(true);
 
+  /** Atualiza filtros parcialmente */
   const setFilters = (newFilters: Partial<Filters>) => {
+    console.log("🧭 Atualizando filtros:", newFilters);
     setFiltersState((prev) => ({ ...prev, ...newFilters }));
   };
 
-  const fetchProducts = useCallback(
-    async (append = false) => {
-      if (abortController.current) abortController.current.abort();
-      abortController.current = new AbortController();
+  /** Busca principal */
+  const fetchProducts = useCallback(async () => {
+    if (abortController.current) abortController.current.abort();
+    abortController.current = new AbortController();
+    setLoading(true);
 
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        params.set("per_page", filters.per_page.toString());
-        params.set(
-          "page",
-          append
-            ? Math.floor(products.length / filters.per_page + 1).toString()
-            : "1"
-        );
+    try {
+      const params = new URLSearchParams();
+      params.set("per_page", filters.per_page.toString());
+      params.set("page", "1");
 
-        if (filters.search) params.set("search", filters.search);
-        if (filters.minPrice > 0)
-          params.set("minPrice", filters.minPrice.toString());
-        if (filters.maxPrice > 0)
-          params.set("maxPrice", filters.maxPrice.toString());
-        if (filters.sort) params.set("sort", filters.sort);
-        if (filters.categoryId) params.set("categoryId", filters.categoryId);
+      if (filters.search) params.set("search", filters.search);
+      if (filters.minPrice > 0)
+        params.set("minPrice", filters.minPrice.toString());
+      if (filters.maxPrice > 0)
+        params.set("maxPrice", filters.maxPrice.toString());
+      if (filters.sort) params.set("sort", filters.sort);
+      if (filters.categoryId) params.set("categoryId", filters.categoryId);
+      if (filters.status) params.set("status", filters.status);
 
-        const res = await fetch(`/api/products?${params.toString()}`, {
-          cache: "no-store",
-          signal: abortController.current.signal,
-        });
+      const finalUrl = `/api/products?${params.toString()}`;
+      console.log("🌐 Fetch:", finalUrl);
 
-        if (!res.ok) throw new Error("Erro ao buscar produtos");
+      const res = await fetch(finalUrl, {
+        cache: "no-store",
+        signal: abortController.current.signal,
+      });
 
-        const data: Product[] = await res.json();
-        setProducts((prev) => (append ? [...prev, ...data] : data));
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name !== "AbortError") {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
+      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+
+      const data: Product[] = await res.json();
+
+      console.log(`✅ ${data.length} produtos recebidos`, {
+        sample: data.slice(0, 2).map((p) => ({
+          id: p.id,
+          status: p.status,
+        })),
+      });
+
+      setProducts(data);
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("💥 Erro ao buscar produtos:", err.message);
+        setError(err.message);
       }
-    },
-    [filters, products.length]
-  );
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
 
-  // 🔹 Debounce apenas para search
+  /** 🕐 Debounce apenas para `search` */
   useEffect(() => {
+    if (!filters.search.trim()) return; // ignora vazio
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
     debounceTimeout.current = setTimeout(() => {
+      console.log("⌛ Debounce concluído:", filters.search);
       fetchProducts();
-    }, 300);
+    }, 400);
 
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
   }, [filters.search, fetchProducts]);
 
-  // 🔹 Fetch sempre que outros filtros mudarem (categoria, preço, sort)
+  /** ⚙️ Refetch controlado — ignora primeira renderização */
   useEffect(() => {
-    fetchProducts();
-  }, [
-    filters.categoryId,
-    filters.minPrice,
-    filters.maxPrice,
-    filters.sort,
-    fetchProducts,
-  ]);
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
+    // só dispara se não for busca digitada
+    if (!filters.search.trim()) {
+      console.log("🧩 Filtros alterados → fetchProducts:", filters);
+      fetchProducts();
+    }
+  }, [filters, fetchProducts]);
 
   return { products, loading, filters, setFilters, fetchProducts, error };
 };
