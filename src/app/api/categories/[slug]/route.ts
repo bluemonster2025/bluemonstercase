@@ -6,9 +6,9 @@ const WP_URL = process.env.WOO_SITE_URL!;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = params;
+  const { slug } = await context.params;
 
   try {
     // 1️⃣ Buscar categoria pelo slug
@@ -44,31 +44,27 @@ export async function GET(
       cache: "no-store",
     });
 
-    if (!categoryRes.ok) {
+    if (!categoryRes.ok)
       return NextResponse.json(
         { error: "Erro ao buscar categoria" },
         { status: categoryRes.status }
       );
-    }
 
     const categoryData = await categoryRes.json();
     const rawCategory = categoryData?.data?.productCategories?.nodes?.[0];
 
-    if (!rawCategory) {
+    if (!rawCategory)
       return NextResponse.json(
         { error: "Categoria não encontrada" },
         { status: 404 }
       );
-    }
 
-    // 🧩 ID numérico da categoria (necessário pro allProducts)
     const categoryId = Number(rawCategory.databaseId);
-    if (!categoryId) {
+    if (!categoryId)
       return NextResponse.json(
         { error: "ID da categoria inválido" },
         { status: 400 }
       );
-    }
 
     // 2️⃣ Buscar produtos da categoria — apenas publicados
     const productsQuery = `
@@ -100,20 +96,16 @@ export async function GET(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: productsQuery,
-        variables: {
-          categoryId,
-          status: "publish",
-        },
+        variables: { categoryId, status: "publish" },
       }),
       cache: "no-store",
     });
 
-    if (!productsRes.ok) {
+    if (!productsRes.ok)
       return NextResponse.json(
         { error: "Erro ao buscar produtos da categoria" },
         { status: productsRes.status }
       );
-    }
 
     const productsData = await productsRes.json();
     const products = productsData?.data?.allProducts?.map(mapProduct) || [];
