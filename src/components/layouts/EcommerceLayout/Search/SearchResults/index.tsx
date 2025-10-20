@@ -43,6 +43,9 @@ export default function SearchResults({
     allowSkeleton.current = false;
   }
 
+  // 🧠 Log de depuração — veja no console do navegador
+  console.log("🔍 Produtos recebidos no SearchResults:", products);
+
   return (
     <div>
       <Title as="h3" className="text-[16px] font-semibold mb-8">
@@ -66,68 +69,78 @@ export default function SearchResults({
         <p className="text-gray-500">Nenhum produto encontrado.</p>
       ) : (
         <div className="grid gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mb-8 items-stretch">
-          {products.map((product) => (
-            <div key={product.id} className="flex flex-col">
-              <Link href={product.slug ? `/produto/${product.slug}` : "#"}>
-                <div className="relative w-full aspect-2/1 rounded-lg overflow-hidden">
-                  {product.tag && product.tag.length > 0 && (
-                    <div className="absolute top-0 right-0 flex gap-1 z-10">
-                      <span
-                        key={product.tag}
-                        className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10"
-                      >
-                        {product.tag}
-                      </span>
-                    </div>
-                  )}
-
-                  {product.image?.sourceUrl ? (
-                    <Image
-                      src={product.image.sourceUrl}
-                      alt={product.image.altText || product.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 600px"
-                      className="object-contain"
-                      loading="lazy"
-                      fetchPriority="low"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      Sem imagem
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 flex-1 flex flex-col">
-                  <Title
-                    as="h2"
-                    className="font-semibold text-sm text-grayscale-400"
-                  >
-                    {product.name}
-                  </Title>
-
-                  <Text className="text-grayscale-400 mt-2 flex items-baseline gap-1">
-                    {product.price !== undefined ? (
-                      <>
-                        <span className="text-xs font-medium">R$</span>
-                        <span className="text-[32px] font-bold">
-                          {new Intl.NumberFormat("pt-BR", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }).format(parsePrice(product.price))}
+          {products.map((product) => {
+            return (
+              <div key={product.id} className="flex flex-col">
+                <Link href={product.slug ? `/produto/${product.slug}` : "#"}>
+                  <div className="relative w-full aspect-2/1 rounded-lg overflow-hidden">
+                    {/* 🔹 Renderiza múltiplas tags ou apenas a principal */}
+                    {/* Tags */}
+                    {product.tags && (
+                      <div className="absolute top-0 right-0 flex gap-1 z-10">
+                        <span className="bg-redscale-100 text-white text-xs px-2 py-1 rounded-full font-bold w-10">
+                          {product.tags}
                         </span>
-                      </>
-                    ) : (
-                      "-"
+                      </div>
                     )}
-                  </Text>
+
+                    {product.image?.sourceUrl ? (
+                      <Image
+                        src={product.image.sourceUrl}
+                        alt={product.image.altText || product.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        className="object-contain"
+                        loading="lazy"
+                        fetchPriority="low"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        Sem imagem
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 flex-1 flex flex-col">
+                    <Title
+                      as="h2"
+                      className="font-semibold text-sm text-grayscale-400"
+                    >
+                      {product.name}
+                    </Title>
+
+                    <Text className="text-grayscale-400 mt-2 flex gap-1 items-center">
+                      {product.price !== undefined
+                        ? (() => {
+                            const formatted = new Intl.NumberFormat("pt-BR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }).format(parsePrice(product.price));
+
+                            const [inteiro, centavos] = formatted.split(",");
+
+                            return (
+                              <>
+                                <span className="text-xs font-medium">R$</span>
+                                <span className="text-[32px] font-bold">
+                                  {inteiro}
+                                </span>
+                                <span className="text-xs font-medium">
+                                  ,{centavos}
+                                </span>
+                              </>
+                            );
+                          })()
+                        : "-"}
+                    </Text>
+                  </div>
+                </Link>
+                <div className="mt-auto flex gap-2 pt-3 text-center">
+                  <BuyButton produto={product} title="Comprar" />
                 </div>
-              </Link>
-              <div className="mt-auto flex gap-2 pt-3 text-center">
-                <BuyButton produto={product} title="Comprar" />
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

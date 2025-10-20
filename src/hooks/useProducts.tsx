@@ -2,20 +2,14 @@ import { Product } from "@/types/product";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 type Filters = {
-  search: string;
-  minPrice: number;
-  maxPrice: number;
-  sort: "asc" | "desc" | "";
-  per_page: number;
+  search?: string;
+  per_page?: number;
   categoryId?: string;
   status?: string;
 };
 
 const defaultFilters: Filters = {
   search: "",
-  minPrice: 0,
-  maxPrice: 0,
-  sort: "",
   per_page: 20,
   status: "publish",
 };
@@ -30,90 +24,82 @@ export const useProducts = () => {
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const firstRender = useRef(true);
 
-  /** Atualiza filtros parcialmente */
-  const setFilters = (newFilters: Partial<Filters>) => {
-    console.log("🧭 Atualizando filtros:", newFilters);
-    setFiltersState((prev) => ({ ...prev, ...newFilters }));
+  /** 🔧 Atualiza filtros parcialmente (merge automático) */
+  const setFilters = (patch: Partial<Filters>) => {
+    setFiltersState((prev) => ({ ...prev, ...patch }));
   };
 
-  /** Busca principal */
-  const fetchProducts = useCallback(async () => {
-    if (abortController.current) abortController.current.abort();
-    abortController.current = new AbortController();
-    setLoading(true);
+  /** 🌐 Busca principal (única fonte da verdade) */
+  const fetchProducts = useCallback(
+    async (activeFilters?: Filters) => {
+      const f = activeFilters || filters;
 
-    try {
-      const params = new URLSearchParams();
-      params.set("per_page", filters.per_page.toString());
-      params.set("page", "1");
+      if (abortController.current) abortController.current.abort();
+      abortController.current = new AbortController();
+      setLoading(true);
+      setError(null);
 
-      if (filters.search) params.set("search", filters.search);
-      if (filters.minPrice > 0)
-        params.set("minPrice", filters.minPrice.toString());
-      if (filters.maxPrice > 0)
-        params.set("maxPrice", filters.maxPrice.toString());
-      if (filters.sort) params.set("sort", filters.sort);
-      if (filters.categoryId) params.set("categoryId", filters.categoryId);
-      if (filters.status) params.set("status", filters.status);
+      try {
+        const params = new URLSearchParams();
+        params.set("per_page", String(f.per_page ?? 20));
+        params.set("page", "1");
 
-      const finalUrl = `/api/products?${params.toString()}`;
-      console.log("🌐 Fetch:", finalUrl);
+        if (f.search?.trim()) params.set("search", f.search.trim());
+        if (f.categoryId) params.set("categoryId", f.categoryId);
+        if (f.status) params.set("status", f.status);
 
-      const res = await fetch(finalUrl, {
-        cache: "no-store",
-        signal: abortController.current.signal,
-      });
+        const finalUrl = `/api/products?${params.toString()}`;
+        console.log("🌐 Fetch:", finalUrl);
 
-      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+        const res = await fetch(finalUrl, {
+          cache: "no-store",
+          signal: abortController.current.signal,
+        });
 
-      const data: Product[] = await res.json();
+        if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
 
-      console.log(`✅ ${data.length} produtos recebidos`, {
-        sample: data.slice(0, 2).map((p) => ({
-          id: p.id,
-          status: p.status,
-        })),
-      });
-
-      setProducts(data);
-    } catch (err) {
-      if (err instanceof Error && err.name !== "AbortError") {
-        console.error("💥 Erro ao buscar produtos:", err.message);
-        setError(err.message);
+        const data: Product[] = await res.json();
+        console.log(`✅ ${data.length} produtos recebidos`);
+        setProducts(data);
+      } catch (err) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.error("💥 Erro ao buscar produtos:", err.message);
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
+    },
+    [filters]
+  );
 
-  /** 🕐 Debounce apenas para `search` */
+  /** ⏳ Debounce apenas para `search` */
   useEffect(() => {
-    if (!filters.search.trim()) return; // ignora vazio
+    const term = filters.search?.trim();
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
-    debounceTimeout.current = setTimeout(() => {
-      console.log("⌛ Debounce concluído:", filters.search);
+    if (term) {
+      debounceTimeout.current = setTimeout(() => {
+        console.log("⌛ Debounce concluído (search):", term);
+        fetchProducts();
+      }, 400);
+    } else if (!firstRender.current) {
+      console.log("🔄 Filtros alterados (sem search) → fetch direto");
       fetchProducts();
-    }, 400);
+    }
 
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-  }, [filters.search, fetchProducts]);
+  }, [filters.search, filters.categoryId, filters.status, fetchProducts]);
 
-  /** ⚙️ Refetch controlado — ignora primeira renderização */
+  /** 🚀 Busca inicial */
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
-      return;
-    }
-
-    // só dispara se não for busca digitada
-    if (!filters.search.trim()) {
-      console.log("🧩 Filtros alterados → fetchProducts:", filters);
       fetchProducts();
     }
-  }, [filters, fetchProducts]);
+  }, [fetchProducts]);
 
   return { products, loading, filters, setFilters, fetchProducts, error };
 };

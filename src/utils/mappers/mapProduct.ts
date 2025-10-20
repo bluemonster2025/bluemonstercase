@@ -55,8 +55,8 @@ interface RawProduct {
   image?: RawImage;
   galleryImages?: { nodes?: RawImage[] };
   variations?: { nodes?: RawVariation[] };
-  productCategories?: { nodes?: RawCategory[] };
-  productTags?: { nodes?: RawTag[] };
+  productCategories?: { nodes?: RawCategory[] } | RawCategory[];
+  productTags?: { nodes?: RawTag[] } | RawTag[];
   crossSell?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[];
   upsell?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[];
   related?: { nodes?: RawRelatedProduct[] } | RawRelatedProduct[];
@@ -69,12 +69,21 @@ export function mapProduct(raw: RawProduct): Product {
     ? { sourceUrl: raw.image.sourceUrl, altText: raw.image.altText || raw.name }
     : undefined;
 
-  const galleryImages = raw.galleryImages?.nodes?.map((img) => ({
-    sourceUrl: img.sourceUrl,
-    altText: img.altText || raw.name,
-  }));
+  const galleryImages = raw.galleryImages
+    ? (Array.isArray(raw.galleryImages)
+        ? raw.galleryImages
+        : raw.galleryImages.nodes || []
+      ).map((img) => ({
+        sourceUrl: img.sourceUrl,
+        altText: img.altText || raw.name,
+      }))
+    : [];
 
-  const productCategories = raw.productCategories?.nodes?.map((cat) => ({
+  const productCategoriesArray = Array.isArray(raw.productCategories)
+    ? raw.productCategories
+    : raw.productCategories?.nodes ?? [];
+
+  const productCategories = productCategoriesArray.map((cat) => ({
     id: cat.id,
     name: cat.name,
     slug: cat.slug,
@@ -133,6 +142,11 @@ export function mapProduct(raw: RawProduct): Product {
     }));
   };
 
+  // 🔹 Corrige suporte às duas estruturas possíveis de tags
+  const productTagsArray = Array.isArray(raw.productTags)
+    ? raw.productTags
+    : raw.productTags?.nodes ?? [];
+
   return {
     id: raw.id,
     name: raw.name,
@@ -143,13 +157,19 @@ export function mapProduct(raw: RawProduct): Product {
     slug: raw.slug || raw.id,
     image,
     galleryImages: galleryImages ? { nodes: galleryImages } : undefined,
-    productCategories: productCategories
+    productCategories: productCategories.length
       ? { nodes: productCategories }
       : undefined,
     variations: variations ? { nodes: variations } : undefined,
     crossSell: { nodes: mapRelated(raw.crossSell) },
     upsell: { nodes: mapRelated(raw.upsell) },
-    tag: raw.productTags?.nodes?.[0]?.name || "",
+
+    // ✅ Agora lida com array simples ou nodes[]
+    tags: productTagsArray.map((t) => t.name),
+
+    // ✅ Mantém o primeiro nome de tag como destaque (para o card)
+    tag: productTagsArray[0]?.name || "",
+
     status: raw.status || "publish",
   };
 }

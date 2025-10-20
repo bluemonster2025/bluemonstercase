@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { Section } from "@/components/elements/Section";
 import { Title } from "@/components/elements/Texts";
 import CategoriesList from "@/components/layouts/EcommerceLayout/Search/CategoriesList";
@@ -9,17 +10,20 @@ import SearchResults from "@/components/layouts/EcommerceLayout/Search/SearchRes
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
 import { useRouter } from "next/navigation";
+import { parsePrice } from "@/utils/parsePrice";
 
 export default function SearchTemplate() {
   const { categories, loading: loadingCategories } = useCategories();
-  const {
-    products,
-    loading: loadingProducts,
-    filters,
-    setFilters,
-  } = useProducts();
-
+  const { products, loading: loadingProducts, setFilters } = useProducts();
   const router = useRouter();
+
+  // ✅ Filtros locais (só usados para filtragem client-side)
+  const [filters, setLocalFilters] = useState({
+    search: "",
+    minPrice: 0,
+    maxPrice: 0,
+    sort: "",
+  });
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -29,9 +33,40 @@ export default function SearchTemplate() {
     }
   };
 
+  // ✅ Quando a busca muda, avisa o hook
+  const handleSearch = (value: string) => {
+    setLocalFilters((prev) => ({ ...prev, search: value }));
+    setFilters({ search: value }); // ainda busca os produtos via API
+  };
+
+  // ✅ Filtro e ordenação local (client-side)
+  const filteredProducts = useMemo(() => {
+    let filtered = [...products];
+
+    if (filters.minPrice > 0) {
+      filtered = filtered.filter(
+        (p) => parsePrice(p.price) >= filters.minPrice
+      );
+    }
+
+    if (filters.maxPrice > 0) {
+      filtered = filtered.filter(
+        (p) => parsePrice(p.price) <= filters.maxPrice
+      );
+    }
+
+    if (filters.sort === "asc") {
+      filtered.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+    } else if (filters.sort === "desc") {
+      filtered.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+    }
+
+    return filtered;
+  }, [products, filters]);
+
   return (
     <Section className="py-8">
-      {/* Header com título e botão voltar */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <Title className="uppercase text-2xl font-semibold">Buscar</Title>
 
@@ -60,8 +95,8 @@ export default function SearchTemplate() {
       <div className="mb-8">
         <SearchBar
           search={filters.search}
-          placeholder="o que você está buscando?"
-          setSearch={(value) => setFilters({ search: value })}
+          placeholder="O que você está buscando?"
+          setSearch={handleSearch}
           inputClassName="p-4 text-sm pr-10"
           sizeIcon={18}
         />
@@ -70,15 +105,14 @@ export default function SearchTemplate() {
       {/* Filtros */}
       {filters.search && (
         <Filters
-          minPrice={filters.minPrice > 0 ? filters.minPrice : undefined}
-          maxPrice={filters.maxPrice > 0 ? filters.maxPrice : undefined}
-          sort={filters.sort}
+          minPrice={filters.minPrice || undefined}
+          maxPrice={filters.maxPrice || undefined}
+          sort={filters.sort as "asc" | "desc" | ""}
           onChange={(newFilters) =>
-            setFilters({
-              minPrice: newFilters.minPrice ?? 0,
-              maxPrice: newFilters.maxPrice ?? 0,
-              sort: newFilters.sort ?? "",
-            })
+            setLocalFilters((prev) => ({
+              ...prev,
+              ...newFilters,
+            }))
           }
         />
       )}
@@ -91,7 +125,7 @@ export default function SearchTemplate() {
       {/* Resultados da busca */}
       {filters.search && (
         <SearchResults
-          products={products}
+          products={filteredProducts}
           loadingProducts={loadingProducts}
           search={filters.search}
         />

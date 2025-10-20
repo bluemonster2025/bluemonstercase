@@ -41,16 +41,11 @@ export async function GET(req: NextRequest) {
   let variables: ProductQueryVariables = {};
 
   try {
-    /**
-     * ✅ Usa sempre `allProducts` quando há status (publish, any, draft, etc.)
-     * Assim a busca por categoria + status funciona corretamente
-     */
     if (status) {
-      // Decodifica o categoryId base64 (ex: "dGVybToxOA==" → 18)
       let decodedCategoryId: number | undefined = undefined;
       if (categoryId) {
         try {
-          const decoded = atob(categoryId); // "term:18"
+          const decoded = atob(categoryId);
           const idPart = decoded.split(":")[1];
           decodedCategoryId = idPart ? Number(idPart) : undefined;
         } catch {
@@ -85,7 +80,9 @@ export async function GET(req: NextRequest) {
               slug
             }
             productTags {
+              id
               name
+              slug
             }
             ... on SimpleProduct {
               price
@@ -110,9 +107,6 @@ export async function GET(req: NextRequest) {
         order,
       };
     } else {
-      /**
-       * 🔹 Fallback: caso sem status (comportamento antigo)
-       */
       query = `
         query Products(
           $search: String
@@ -152,7 +146,9 @@ export async function GET(req: NextRequest) {
                 slug
               }
               productTags {
+                id
                 name
+                slug
               }
               ... on SimpleProduct {
                 price
@@ -169,11 +165,10 @@ export async function GET(req: NextRequest) {
         }
       `;
 
-      // Decodifica categoria
       let decodedCategoryId: number | undefined = undefined;
       if (categoryId) {
         try {
-          const decoded = atob(categoryId); // "term:18"
+          const decoded = atob(categoryId);
           const idPart = decoded.split(":")[1];
           decodedCategoryId = idPart ? Number(idPart) : undefined;
         } catch {
@@ -215,9 +210,17 @@ export async function GET(req: NextRequest) {
 
     const result = await res.json();
 
+    // ✅ Corrigido: agora mapeia os produtos de allProducts também
     if (result.data?.allProducts) {
-      console.log("✅ Retornando allProducts:", result.data.allProducts.length);
-      return NextResponse.json(result.data.allProducts);
+      const mappedProducts = result.data.allProducts.map((p: RawProduct) =>
+        mapProduct(p)
+      );
+
+      console.log(
+        "✅ Retornando allProducts (mapeados):",
+        mappedProducts.length
+      );
+      return NextResponse.json(mappedProducts);
     }
 
     const mappedProducts =

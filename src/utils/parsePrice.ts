@@ -1,12 +1,14 @@
 export const parsePrice = (price?: string): number => {
   if (!price) return 0;
 
-  // Remove qualquer coisa que não seja número, vírgula ou ponto
-  const cleaned = price.replace(/[^0-9,]+/g, "");
+  // Remove tudo que não for número, vírgula ou ponto
+  let cleaned = price.replace(/[^0-9.,]+/g, "");
 
-  // Substitui vírgula decimal por ponto
-  const normalized = cleaned.replace(",", ".");
+  // Se existir vírgula, ela é o separador decimal → remove todos os pontos de milhar
+  if (cleaned.includes(",")) {
+    cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+  }
 
-  // Converte para número
-  return parseFloat(normalized) || 0;
+  // Se não tiver vírgula, assume formato com ponto decimal (ex: 3199.99)
+  return parseFloat(cleaned) || 0;
 };

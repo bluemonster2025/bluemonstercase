@@ -55,6 +55,7 @@ export interface Product {
   crossSell?: { nodes: RelatedProductNode[] };
   upsell?: { nodes: RelatedProductNode[] };
   tag?: string;
+  tags?: string[];
   /** 🔥 status do produto */
   status?: "publish" | "draft" | "pending" | "private" | "any" | string;
 }
