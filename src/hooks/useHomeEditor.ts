@@ -76,30 +76,53 @@ export function useHomeEditor(initialPage: PageHome) {
   const sanitizeProducts = (
     products: ProductSession["featuredProducts"] = []
   ) =>
-    products.map((p) => ({
-      id: p.id || "",
-      title: p.title || "",
-      price: p.price || "",
-      featuredImage: p.featuredImage || undefined,
-      customTag: p.customTag || "",
-      // 🔹 Garantir boolean e false se não definido
-      visible: p.visible ?? false,
-    }));
+    products
+      .filter((p) => p?.id) // evita produtos sem ID
+      .map((p) => {
+        // 🔹 Normaliza o ID:
+        // se já vier no formato base64 (cHJvZHVjdD...) mantém;
+        // se for número simples (ex: "166"), converte para base64 padrão do GraphQL.
+        const normalizedId =
+          p.id.startsWith("product:") || p.id.startsWith("cHJvZHVjdD")
+            ? p.id
+            : btoa(`product:${p.id}`);
 
-  // 🔹 Constrói JSON de tags
+        return {
+          id: normalizedId,
+          title: p.title || "",
+          price: p.price || "",
+          featuredImage: p.featuredImage || undefined,
+          customTag: p.customTag || "",
+          visible: p.visible ?? false,
+        };
+      });
+
+  // 🔹 Constrói JSON de tags (corrigido com normalização de ID)
   const buildFeaturedTags = (products?: ProductSession["featuredProducts"]) => {
     const tags: Record<string, string> = {};
     products?.forEach((p) => {
-      if (p.customTag) tags[p.id] = p.customTag;
+      // Normaliza ID da mesma forma que no sanitizeProducts
+      const normalizedId =
+        p.id.startsWith("product:") || p.id.startsWith("cHJvZHVjdD")
+          ? p.id
+          : btoa(`product:${p.id}`);
+
+      // Sempre cria chave (mesmo se tag vazia)
+      tags[normalizedId] = p.customTag ?? "";
     });
     return JSON.stringify(tags);
   };
 
-  // 🔹 Constrói JSON de visibilidade (true/false)
+  // 🔹 Constrói JSON de visibilidade (corrigido com normalização de ID)
   const buildVisibleTags = (products?: ProductSession["featuredProducts"]) => {
     const visibles: Record<string, boolean> = {};
     products?.forEach((p) => {
-      visibles[p.id] = p.visible ?? false; // padrão false
+      const normalizedId =
+        p.id.startsWith("product:") || p.id.startsWith("cHJvZHVjdD")
+          ? p.id
+          : btoa(`product:${p.id}`);
+
+      visibles[normalizedId] = p.visible ?? false;
     });
     return JSON.stringify(visibles);
   };

@@ -230,12 +230,12 @@ export default function SectionProductsEdit({
                                   className="w-full text-left p-2 hover:bg-gray-50 transition cursor-pointer"
                                   onClick={() => {
                                     if (selectedIndex !== null) {
-                                      // 🔹 Reset tag e visible ao trocar produto
                                       handleLocalChange(index, {
                                         ...prod,
                                         customTag: "",
                                         visible: false,
                                       });
+
                                       setSelectedIndex(null);
                                       setSearchQuery("");
                                     }
