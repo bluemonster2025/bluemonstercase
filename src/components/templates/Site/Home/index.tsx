@@ -36,6 +36,8 @@ export default async function Home({ page }: HomeTemplateProps) {
 
   return (
     <main className="min-h-screen">
+      {/* <AlertModal /> */}
+
       <HeroComponent
         imgUrlDesktop={bgHeroDesktop}
         imgUrlMobile={bgHeroDesktopMobile}

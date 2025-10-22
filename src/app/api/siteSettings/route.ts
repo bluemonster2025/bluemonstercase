@@ -12,7 +12,7 @@ export async function GET() {
           id
           title
           content
-          configuracoesDoSite {
+          configuracoesSite {
             logoSite {
               node {
                 sourceUrl

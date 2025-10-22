@@ -12,7 +12,7 @@ export interface RawPage {
   id: string;
   title: string;
   content?: string;
-  configuracoesDoSite?: RawConfiguracoesSite;
+  configuracoesSite?: RawConfiguracoesSite;
 }
 
 // Tipo final (mapeado)

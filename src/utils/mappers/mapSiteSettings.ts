@@ -6,6 +6,6 @@ export function mapSiteSettings(raw: RawPage): SiteSettings {
     id: raw.id,
     title: raw.title,
     content: raw.content,
-    logo: raw.configuracoesDoSite?.logoSite?.node,
+    logo: raw.configuracoesSite?.logoSite?.node,
   };
 }
